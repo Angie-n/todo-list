@@ -37,10 +37,11 @@
                 <section>
                     <label for="p-name">Name: </label>
                     <input type="text" id="p-name" name="p-name" maxlength="25"> <br>
+
                     <label for="p-description">Description: </label>
                     <input type="text" id="p-description" class="description" name="p-description" maxlength="250">
                 </section>
-                <div class="error-msg"></div>
+                <div id="p-error-msg" class="error-msg"></div>
                 <div><button type="submit">Create Project</button></div>
             </form>
         </div>
@@ -51,13 +52,32 @@
             <form>
                 <h2>New Todo</h2>
                 <section>
-                    <label for="t-name">Name: </label>
+                    <label for="t-name">Task: </label>
                     <input type="text" id="t-name" name="t-name" maxlength="25"> <br>
+
                     <label for="t-description">Description: </label>
                     <input type="text" id="t-description" class="description" name="t-description" maxlength="250">
+
+                    <label for="t-due-date">Due Date: </label>
+                    <input type="date" id="t-due-date" name="t-due-date"> <br>
+                    
+                    <p>Priority level: </p>
+                    <div>
+                        <input type="radio" id="lowPriority" name="priority" value="low" checked>
+                        <label for="lowPriority">Low</label>
+                    
+                        <input type="radio" id="mediumPriority" name="priority" value="medium">
+                        <label for="mediumPriority">Medium</label>
+                    
+                        <input type="radio" id="highPriority" name="priority" value="high">
+                        <label for="highPriority">High</label>
+                    </div>
+
+                    <label for="t-notes">Notes: </label>
+                    <input type="text" id="t-notes" name="t-notes"> <br>
                 </section>
-                <div class="error-msg"></div>
-                <div><button type="submit">Create Project</button></div>
+                <div id="t-error-msg" class="error-msg"></div>
+                <div><button type="submit">Create Todo</button></div>
             </form>
         </div>
     </div>
