@@ -125,6 +125,10 @@ button[type='submit']:hover {
     margin: 10px;
 }
 
+#nav button {
+    text-align: left;
+}
+
 #nav button:hover {
     color: var(--light-brown);
 }
@@ -200,7 +204,7 @@ button[type='submit']:hover {
     font-family: inherit;
 }
 
-#project-description {
+#description {
     width: 70%;
 }
 
