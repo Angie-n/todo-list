@@ -1,6 +1,7 @@
 import * as projectModule from "./project.js";
+import * as todoModule from "./todo.js";
 
-const todo = (todo) => {
+const todoDom = (todo) => {
     let todoTasksContainer = document.getElementById("todo");
 
     let etask = document.createElement("li");
@@ -26,23 +27,28 @@ const todo = (todo) => {
     }
 
     let addText = () => {
-        etitle.textContent = todo.getTitle;
-        edescription.textContent = todo.getDescription;
-        edueDate.textContent = todo.getDueDae;
-        enotes.textContent = todo.getNotes;
+        etitle.textContent = todo.getTitle();
+        edescription.textContent = todo.getDescription();
+        edueDate.textContent = todo.getDueDate();
+        enotes.textContent = todo.getNotes();
     }
     
     let addStyles = () => {
-        etask.classList.addClass("task");
+        etask.classList.add("task");
         etask.style.borderColor = priority.color;
-        etitle.classList.addClass("title");
-        edescription.classList.addClass("description");
-        edueDate.classList.addClass("due-date");
-        enotes.classList.addClass("notes");
+        etitle.classList.add("title");
+        edescription.classList.add("description");
+        edueDate.classList.add("due-date");
+        enotes.classList.add("notes");
 
-        checkmarkBtn.classList.add("fa-solid fa-circle-check");
-        editBtn.classList.add("fa-solid fa-pen-to-square");
-        deleteBtn.classList.add("fa-regular fa-trash-can");
+        checkmarkBtn.classList.add("fa-solid");
+        checkmarkBtn.classList.add("fa-circle-check")
+
+        editBtn.classList.add("fa-solid");
+        editBtn.classList.add("fa-pen-to-square");
+
+        deleteBtn.classList.add("fa-regular");
+        deleteBtn.classList.add("fa-trash-can");
     }
 
     let append = () => {
@@ -59,51 +65,21 @@ const todo = (todo) => {
     return {createInDom};
 } 
 
-const newProject = (() => {
-    let addProjectBtn = document.getElementById("add-project-btn");
-    let addProjectDiv = document.getElementById("add-project");
-    let exitBtn = addProjectDiv.getElementsByClassName("exit-btn")[0];
-    let form = addProjectDiv.getElementsByTagName("form")[0];
+const form = (div, addBtn) => {
+    let form = div.getElementsByTagName("form")[0];
+    let exitBtn = div.getElementsByClassName("exit-btn")[0];
     let blocker = document.getElementById("blocker");
 
-    addProjectBtn.onclick = (e => {
-        blocker.style.filter = "blur(5px)";
-        addProjectDiv.style.display = "flex";
-    });
+    let addEvents = () => {
+        addBtn.onclick = e => {
+            blocker.style.filter = "blur(5px)";
+            div.style.display = "flex";
+        };
 
-    exitBtn.onclick = (e => {
-        removeStyles();
-    });
-
-    form.onsubmit = (e => {
-        e.preventDefault();
-        let name = document.getElementById("p-name").value.trim();
-        let description = document.getElementById("p-description").value;
-
-        if(!validateForm(name)) return false;
-
-        let project = projectModule.project(name, description, []);
-        projectModule.projects.push(project);
-        clearForm();
-        removeStyles();
-        createBtnToProject(project);
-    })
-
-    let validateForm = (name) => {
-        let errorMsg = form.getElementsByClassName("error-msg")[0];
-
-        if(name == "") {
-            errorMsg.textContent = "*Error: Name is missing";
-            return false;
-        }
-        for(let i = 0; i < projectModule.projects.length; i++) {
-            if(name == projectModule.projects[i].getTitle()) {
-                errorMsg.textContent = "*Error: Name is already used in an existing project";
-                return false;
-            }
-        }
-        errorMsg.textContent = "";
-        return true;
+        exitBtn.onclick = e => {
+            removeStyles();
+        };
+        console.log(div);
     }
 
     let clearForm = () => {
@@ -115,7 +91,67 @@ const newProject = (() => {
 
     let removeStyles = () => {
         blocker.style.filter = "none";
-        addProjectDiv.style.display = "none";
+        div.style.display = "none";
+    }
+
+    return {addEvents, clearForm, removeStyles}
+}
+
+const newTodo = (() => {
+    let addTodoDiv = document.getElementById("add-todo");
+    let todoForm = addTodoDiv.getElementsByTagName("form")[0];
+    let addBtn = document.getElementById("add-todo-btn");
+
+    let f = form(addTodoDiv, addBtn);
+    f.addEvents();
+
+    todoForm.onsubmit = (e => {
+        e.preventDefault();
+        let name = document.getElementById("t-name").value.trim();
+        let description = document.getElementById("t-description").value;
+        let dueDate = document.getElementById("t-due-date").value;
+        let priority = document.querySelector("input[name='priority'].checked");
+        let notes = document.getElementById("t-notes").value;
+
+        let task = todoModule.todo(name, description, dueDate, priority, notes);
+        todoDom(task).createInDom();
+        f.clearForm();
+        f.removeStyles();
+    })
+})();
+
+const newProject = (() => {
+    let addProjectDiv = document.getElementById("add-project");
+    let formDiv = addProjectDiv.getElementsByTagName("form")[0];
+    let addBtn = document.getElementById("add-project-btn");
+
+    let f = form(addProjectDiv, addBtn);
+    f.addEvents();
+
+    formDiv.onsubmit = (e => {
+        e.preventDefault();
+        let name = document.getElementById("p-name").value.trim();
+        let description = document.getElementById("p-description").value;
+
+        if(!validateForm(name)) return false;
+
+        let project = projectModule.project(name, description, []);
+        projectModule.projects.push(project);
+        f.clearForm();
+        f.removeStyles();
+        createBtnToProject(project);
+    })
+
+    let validateForm = (name) => {
+        let errorMsg = formDiv.getElementsByClassName("error-msg")[0];
+        for(let i = 0; i < projectModule.projects.length; i++) {
+            if(name == projectModule.projects[i].getTitle()) {
+                errorMsg.textContent = "*Error: Name is already used in an existing project";
+                return false;
+            }
+        }
+        errorMsg.textContent = "";
+        return true;
     }
 
     let createBtnToProject = (project) => {
@@ -142,7 +178,7 @@ const showProject = (project) => {
     let message = document.getElementById("project-msg")
     if(todosArr.length == 0) message.textContent = "No upcoming tasks for this project";
     else {
-        for(let i = 0; i < todosArr.length; i++) todo.createInDom(todosArr[i]);
+        for(let i = 0; i < todosArr.length; i++) todoDom.createInDom(todosArr[i]);
         message.textContent = "";
     }
 }
