@@ -265,13 +265,25 @@ i {
     color: green;
 }
 
+.checkmark-div:hover {
+    background-color: rgb(213, 211, 204);
+}
+
 .edit-btn {
     grid-row: 1 / 2;
     grid-column: 4 / 5;
 }
 
+.edit-btn:hover {
+    color: var(--teal);
+}
+
 .delete-btn {
     grid-row: 1 / 2;
     grid-column: 5 / 6;
+}
+
+.delete-btn:hover {
+    color: red;
 }
 
