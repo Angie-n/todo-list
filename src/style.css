@@ -108,7 +108,7 @@ button[type='submit']:hover {
     font-size: 0.8em;
 }
 
-#nav-todo {
+#nav-project {
     display: flex;
     width: calc(100vw - 40px);
     margin: 0 20px 20px 20px;
@@ -135,7 +135,7 @@ button[type='submit']:hover {
     color: var(--light-brown);
 }
 
-#todo {
+#project {
     position: relative;
     width: calc(100% - var(--sidebar-width));
     background-color: var(--beige);
@@ -145,7 +145,7 @@ button[type='submit']:hover {
     min-height: calc(100vh - var(--title-height) - 150px);
 }
 
-#todo h2 {
+#project h2 {
     position: absolute;
     top: calc(0px - var(--folder-border-size) - 20px);
     left: calc(0px - var(--folder-border-size));
@@ -160,7 +160,7 @@ button[type='submit']:hover {
     box-shadow: inset 1px -5px 3px var(--dark-manila);
 }
 
-#todo p {
+#project p {
     font-size: 1.5em;
 }
 
