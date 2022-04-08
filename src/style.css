@@ -162,7 +162,7 @@ button[type='submit']:hover {
     font-size: 1.5em;
 }
 
-#add-project { 
+.add { 
     position: fixed;
     top: 0;
     bottom: 0;
@@ -173,7 +173,7 @@ button[type='submit']:hover {
     align-items: center;
 }
 
-#add-project-card {
+.add-card {
     position: relative;
     background-color: var(--beige);
     width : 90%;
@@ -184,27 +184,27 @@ button[type='submit']:hover {
     border: 5px solid var(--manila);
 }
 
-#add-project-card h2 {
+.add-card h2 {
     margin-bottom: 10px;
 }
 
-#add-project-card section *{
+.add-card section *{
     margin-top: 10px;
 }
 
-#add-project-card section label {
+.add-card section label {
     display: inline-block;
     width: 100px;
 }
 
-#add-project-card section input {
+.add-card section input {
     border: none;
     border-bottom: var(--brown) 1px solid;
     background-color: inherit;
     font-family: inherit;
 }
 
-#description {
+.description {
     width: 70%;
 }
 

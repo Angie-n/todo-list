@@ -24,19 +24,37 @@
                 <h2 id="project-title"></h2>
                 <p id="project-description"></p>
                 <ul id="todo"></ul>
+                <div id="project-msg"></div>
+                <button id="add-todo-btn">+ Add new task</button>
             </div>
         </div>
     </div>
-    <div id="add-project">
-        <div id="add-project-card">
+    <div id="add-project" class="add">
+        <div id="add-project-card" class="add-card">
             <button class="exit-btn">x</button>
             <form>
                 <h2>New Project</h2>
                 <section>
-                    <label for="name">Name: </label>
-                    <input type="text" id="name" name="name" maxlength="25"> <br>
-                    <label for="description">Description: </label>
-                    <input type="text" id="description" name="description" maxlength="250">
+                    <label for="p-name">Name: </label>
+                    <input type="text" id="p-name" name="p-name" maxlength="25"> <br>
+                    <label for="p-description">Description: </label>
+                    <input type="text" id="p-description" class="description" name="p-description" maxlength="250">
+                </section>
+                <div class="error-msg"></div>
+                <div><button type="submit">Create Project</button></div>
+            </form>
+        </div>
+    </div>
+    <div id="add-todo" class="add">
+        <div id="add-todo-card" class="add-card">
+            <button class="exit-btn">x</button>
+            <form>
+                <h2>New Todo</h2>
+                <section>
+                    <label for="t-name">Name: </label>
+                    <input type="text" id="t-name" name="t-name" maxlength="25"> <br>
+                    <label for="t-description">Description: </label>
+                    <input type="text" id="t-description" class="description" name="t-description" maxlength="250">
                 </section>
                 <div class="error-msg"></div>
                 <div><button type="submit">Create Project</button></div>
