@@ -1,6 +1,6 @@
 import * as projectModule from "./project.js";
 
-const newTodo = (todo) => {
+const todo = (todo) => {
     let todoTasksContainer = document.getElementById("todo");
 
     let etask = document.createElement("li");
@@ -77,8 +77,8 @@ const newProject = (() => {
 
     form.onsubmit = (e => {
         e.preventDefault();
-        let name = document.getElementById("project-name").value.trim();
-        let description = document.getElementById("project-description").value;
+        let name = document.getElementById("p-name").value.trim();
+        let description = document.getElementById("p-description").value;
 
         if(!validateForm(name)) return false;
 
@@ -139,7 +139,10 @@ const showProject = (project) => {
     description.textContent = project.getDescription();
 
     let todosArr = project.getTodos();
-    for(let i = 0; i < todosArr.length; i++) {
-        newTodo.createInDom(todosArr[i]);
+    let message = document.getElementById("project-msg")
+    if(todosArr.length == 0) message.textContent = "No upcoming tasks for this project";
+    else {
+        for(let i = 0; i < todosArr.length; i++) todo.createInDom(todosArr[i]);
+        message.textContent = "";
     }
 }
