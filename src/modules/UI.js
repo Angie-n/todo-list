@@ -10,19 +10,21 @@ const todoDom = (todo) => {
     let edueDate = document.createElement("p");
     let enotes = document.createElement("p");
 
+    let checkmarkDiv = document.createElement("div");
     let checkmarkBtn = document.createElement("i");
     let editBtn = document.createElement("i");
     let deleteBtn = document.createElement("i");
 
-    let hoverDiv = document.createElement("div");
-
     let priority = () => {
-        let color = setColor(todo.priority);
         let setColor = (level) => {
+            let priorityColor;
             if(level == "high") priorityColor = "red";
             else if (level == "medium") priorityColor = "yellow";
             else priorityColor = "green";
+            return priorityColor;
         }
+
+        let color = setColor(todo.getPriority());
         return {color};
     }
 
@@ -35,25 +37,40 @@ const todoDom = (todo) => {
     
     let addStyles = () => {
         etask.classList.add("task");
-        etask.style.borderColor = priority.color;
+        etask.style.borderLeft = priority().color + " 5px solid";
         etitle.classList.add("title");
         edescription.classList.add("description");
         edueDate.classList.add("due-date");
         enotes.classList.add("notes");
 
-        checkmarkBtn.classList.add("fa-solid");
-        checkmarkBtn.classList.add("fa-circle-check")
+        checkmarkDiv.classList.add("checkmark-div");
+        checkmarkBtn.classList.add("checkmark-btn");
+        checkmarkDiv.onclick = () => {
+            checkmarkBtn.classList.toggle("fa-solid");
+            checkmarkBtn.classList.toggle("fa-circle-check");
+            if(checkmarkBtn.classList.length == 1) {
+                checkmarkDiv.style.border = "1px solid black";
+                etask.style.textDecoration = "none";
+            }
+            else {
+                checkmarkDiv.style.border = "none";
+                etask.style.textDecoration = "line-through";
+            }
+        }
 
+        editBtn.classList.add("edit-btn");
         editBtn.classList.add("fa-solid");
         editBtn.classList.add("fa-pen-to-square");
 
+        deleteBtn.classList.add("delete-btn");
         deleteBtn.classList.add("fa-regular");
         deleteBtn.classList.add("fa-trash-can");
     }
 
     let append = () => {
-        hoverDiv.append(enotes);
-        todoTasksContainer.append(checkmarkBtn, etask, etitle, edescription, edueDate, hoverDiv, editBtn, deleteBtn);
+        checkmarkDiv.append(checkmarkBtn);
+        etask.append(checkmarkDiv, etitle, edescription, edueDate, enotes, editBtn, deleteBtn);
+        todoTasksContainer.append(etask);
     }
 
     let createInDom = () => {
@@ -79,7 +96,6 @@ const form = (div, addBtn) => {
         exitBtn.onclick = e => {
             removeStyles();
         };
-        console.log(div);
     }
 
     let clearForm = () => {
@@ -110,7 +126,7 @@ const newTodo = (() => {
         let name = document.getElementById("t-name").value.trim();
         let description = document.getElementById("t-description").value;
         let dueDate = document.getElementById("t-due-date").value;
-        let priority = document.querySelector("input[name='priority'].checked");
+        let priority = document.querySelector("input[name='t-priority']:checked").value;
         let notes = document.getElementById("t-notes").value;
 
         let task = todoModule.todo(name, description, dueDate, priority, notes);
@@ -182,3 +198,5 @@ const showProject = (project) => {
         message.textContent = "";
     }
 }
+
+export {todoDom};
