@@ -1,8 +1,8 @@
 import * as projectModule from "./project.js";
 
-const todoTasksContainer = document.getElementById("tasks");
-
 const newTodo = (todo) => {
+    let todoTasksContainer = document.getElementById("todo");
+
     let etask = document.createElement("li");
     let etitle = document.createElement("h3");
     let edescription = document.createElement("p");
@@ -78,14 +78,15 @@ const newProject = (() => {
     form.onsubmit = (e => {
         e.preventDefault();
         let name = document.getElementById("project-name").value.trim();
-        let description = document.getElementById("project-description").value.trim();
+        let description = document.getElementById("project-description").value;
 
         if(!validateForm(name)) return false;
 
-        projectModule.projects.push(projectModule.project(name, description, []));
+        let project = projectModule.project(name, description, []);
+        projectModule.projects.push(project);
         clearForm();
         removeStyles();
-        console.log(projectModule.projects[0].getTitle());
+        createBtnToProject(project);
     })
 
     let validateForm = (name) => {
@@ -116,4 +117,29 @@ const newProject = (() => {
         blocker.style.filter = "none";
         addProjectDiv.style.display = "none";
     }
+
+    let createBtnToProject = (project) => {
+        let li = document.createElement("li");
+        let btn = document.createElement("button");
+        btn.classList.add("to-project-btn");
+        btn.textContent = project.getTitle();
+        btn.onclick = () => showProject(project);
+        li.append(btn);
+
+        let nav = document.getElementById("nav");
+        nav.insertBefore(li, nav.lastElementChild);
+    }
 })();
+
+const showProject = (project) => {
+    let title = document.getElementById("project-title");
+    let description = document.getElementById("project-description");
+
+    title.textContent = project.getTitle();
+    description.textContent = project.getDescription();
+
+    let todosArr = project.getTodos();
+    for(let i = 0; i < todosArr.length; i++) {
+        newTodo.createInDom(todosArr[i]);
+    }
+}
