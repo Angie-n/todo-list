@@ -95,11 +95,11 @@ button[type='submit']:hover {
 }
 
 .error-msg {
-    margin-top: 40px;
     text-align: center;
     width: 100%;
     color: red;
     font-size: 0.8em;
+    margin-bottom: 50px;
 }
 
 #open-nav-btn {
@@ -217,8 +217,9 @@ button[type='submit']:hover {
     font-family: inherit;
 }
 
-.add-card input:last-of-type {
-    margin-bottom: 20px;
+form section > input:last-of-type {
+    margin-bottom: 60px;
+    margin-top: 0;
 }
 
 .form-description {
