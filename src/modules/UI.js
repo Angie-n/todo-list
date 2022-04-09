@@ -188,13 +188,17 @@ const newProject = (() => {
 
         if(!f.validate().checkEmpty(name, "Name") || !f.validate().checkTitleForDuplicate(name, projectModule.projects)) return false;
 
+        add(name, description);
+        f.clear();
+        f.removeStyles();
+    })
+
+    let add = (name, description) => {
         let project = projectModule.project(name, description, []);
         projectModule.projects.push(project);
         if(projectModule.projects.length > 6) document.getElementById("nav").style.transform = "none";
-        f.clear();
-        f.removeStyles();
         createBtnToProject(project);
-    })
+    }
 
     let createBtnToProject = (project) => {
         let li = document.createElement("li");
@@ -212,6 +216,9 @@ const newProject = (() => {
 const showProject = (project) => {
     let title = document.getElementById("project-title");
     let description = document.getElementById("project-description");
+
+    let todoDiv = document.getElementById("todo");
+    todoDiv.innerHTML = "";
 
     title.textContent = project.getTitle();
     description.textContent = project.getDescription();
@@ -241,4 +248,4 @@ const mobileNav = (() => {
     }
 })();
 
-export {todoDom};
+export {todoDom, newProject};
