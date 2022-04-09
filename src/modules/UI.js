@@ -109,7 +109,7 @@ const form = (div, addBtn) => {
         };
     }
 
-    let clearForm = () => {
+    let clear = () => {
         let inputs = form.getElementsByTagName("input");
         for(let i = 0; i < inputs.length; i++) {
             if(inputs[i].getAttribute("name") !== "t-priority")inputs[i].value = "";
@@ -121,7 +121,31 @@ const form = (div, addBtn) => {
         div.style.display = "none";
     }
 
-    return {addEvents, clearForm, removeStyles}
+    let validate = () => {
+        let errorMsg = form.getElementsByClassName("error-msg")[0];
+        let checkEmpty = (input, inputName) => {
+            if (input === "") {
+                errorMsg.textContent = "*Error: " + inputName + " must be entered.";
+                return false;
+            }
+            errorMsg.textContent = "";
+            return true;
+        }
+
+        let checkTitleForDuplicate = (input, arr) => {
+            for(let i = 0; i < arr.length; i++) {
+                if(input == arr[i].getTitle()) {
+                    errorMsg.textContent = "*Error: Name is already being used.";
+                    return false;
+                }
+            }
+            errorMsg.textContent = "";
+            return true;
+        }
+        return {checkEmpty, checkTitleForDuplicate};
+    }
+
+    return {addEvents, clear, removeStyles, validate}
 }
 
 const newTodo = (() => {
@@ -140,9 +164,11 @@ const newTodo = (() => {
         let priority = document.querySelector("input[name='t-priority']:checked").value;
         let notes = document.getElementById("t-notes").value;
 
+        if(!f.validate().checkEmpty(name, "Name")) return false;
+
         let task = todoModule.todo(name, description, dueDate, priority, notes);
         todoDom(task).createInDom();
-        f.clearForm();
+        f.clear();
         f.removeStyles();
     })
 })();
@@ -160,27 +186,15 @@ const newProject = (() => {
         let name = document.getElementById("p-name").value.trim();
         let description = document.getElementById("p-description").value;
 
-        if(!validateForm(name)) return false;
+        if(!f.validate().checkEmpty(name, "Name") || !f.validate().checkTitleForDuplicate(name, projectModule.projects)) return false;
 
         let project = projectModule.project(name, description, []);
         projectModule.projects.push(project);
         if(projectModule.projects.length > 6) document.getElementById("nav").style.transform = "none";
-        f.clearForm();
+        f.clear();
         f.removeStyles();
         createBtnToProject(project);
     })
-
-    let validateForm = (name) => {
-        let errorMsg = formDiv.getElementsByClassName("error-msg")[0];
-        for(let i = 0; i < projectModule.projects.length; i++) {
-            if(name == projectModule.projects[i].getTitle()) {
-                errorMsg.textContent = "*Error: Name is already used in an existing project";
-                return false;
-            }
-        }
-        errorMsg.textContent = "";
-        return true;
-    }
 
     let createBtnToProject = (project) => {
         let li = document.createElement("li");
@@ -226,4 +240,5 @@ const mobileNav = (() => {
         }
     }
 })();
+
 export {todoDom};
