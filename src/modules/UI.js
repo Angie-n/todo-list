@@ -8,6 +8,7 @@ const todoDom = (todo) => {
     let etitle = document.createElement("h3");
     let edescription = document.createElement("p");
     let edueDate = document.createElement("p");
+    let noteLabel = document.createElement("span");
     let enotes = document.createElement("p");
 
     let checkmarkDiv = document.createElement("div");
@@ -31,6 +32,7 @@ const todoDom = (todo) => {
         etitle.textContent = todo.getTitle();
         edescription.textContent = todo.getDescription();
         edueDate.textContent = todo.getDueDate();
+        noteLabel.textContent = "Notes: ";
         enotes.textContent = todo.getNotes();
     }
     
@@ -40,6 +42,7 @@ const todoDom = (todo) => {
         etitle.classList.add("title");
         edescription.classList.add("description");
         edueDate.classList.add("due-date");
+        noteLabel.style.fontWeight = "bold";
         enotes.classList.add("notes");
 
         checkmarkDiv.classList.add("checkmark-div");
@@ -61,10 +64,12 @@ const todoDom = (todo) => {
             if(checkmarkBtn.classList.length == 1) {
                 checkmarkDiv.style.border = "1px solid black";
                 etask.style.textDecoration = "none";
+                etask.style.backgroundColor = "inherit";
             }
             else {
                 checkmarkDiv.style.border = "none";
                 etask.style.textDecoration = "line-through";
+                etask.style.backgroundColor = "rgb(237, 232, 221)";
             }
         }
 
@@ -72,6 +77,7 @@ const todoDom = (todo) => {
     }
 
     let append = () => {
+        enotes.prepend(noteLabel);
         checkmarkDiv.append(checkmarkBtn);
         etask.append(checkmarkDiv, etitle, edescription, edueDate, enotes, editBtn, deleteBtn);
         todoTasksContainer.append(etask);
@@ -158,6 +164,7 @@ const newProject = (() => {
 
         let project = projectModule.project(name, description, []);
         projectModule.projects.push(project);
+        if(projectModule.projects.length > 6) document.getElementById("nav").style.transform = "none";
         f.clearForm();
         f.removeStyles();
         createBtnToProject(project);
@@ -204,4 +211,19 @@ const showProject = (project) => {
     }
 }
 
+const mobileNav = (() => {
+    let openNavBtn = document.getElementById("open-nav-btn");
+    let nav = document.getElementById("nav");
+    let project = document.getElementById("project");
+    openNavBtn.onclick = () => {
+        if(nav.style.display == "block") {
+            nav.style.display = "none";
+            project.style.marginTop = "20px";
+        }
+        else {
+            nav.style.display = "block";
+            project.style.marginTop = "0px";
+        }
+    }
+})();
 export {todoDom};

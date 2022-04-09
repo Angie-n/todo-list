@@ -12,20 +12,21 @@
 <body>
     <div id="blocker">
         <h1>Todo List</h1>
+        <i class="fa-solid fa-bars" id="open-nav-btn"></i>
         <div id="nav-project">
             <ul id="nav">
                 <li><button class="to-project-btn">Home</button></li>
                 <li><button class="to-project-btn">Today</button></li>
                 <li><button class="to-project-btn">This Week</button></li>
                 <li><h2>Projects</h2></li>
-                <li><button id="add-project-btn">+ Add a project</button></li>
+                <li><button id="add-project-btn" class="add-btn">+ Add a project</button></li>
             </ul>
             <div id="project">
                 <h2 id="project-title"></h2>
                 <p id="project-description"></p>
                 <ul id="todo"></ul>
                 <div id="project-msg"></div>
-                <button id="add-todo-btn">+ Add new task</button>
+                <button id="add-todo-btn" class="add-btn">+ Add new task</button>
             </div>
         </div>
     </div>
@@ -36,10 +37,10 @@
                 <h2>New Project</h2>
                 <section>
                     <label for="p-name">Name: </label>
-                    <input type="text" id="p-name" name="p-name" maxlength="25"> <br>
+                    <input type="text" id="p-name" name="p-name" maxlength="25" required> <br>
 
                     <label for="p-description">Description: </label>
-                    <input type="text" id="p-description" class="description" name="p-description" maxlength="250">
+                    <input type="text" id="p-description" class="form-description" name="p-description" maxlength="250">
                 </section>
                 <div id="p-error-msg" class="error-msg"></div>
                 <div><button type="submit">Create Project</button></div>
@@ -53,23 +54,23 @@
                 <h2>New Todo</h2>
                 <section>
                     <label for="t-name">Task: </label>
-                    <input type="text" id="t-name" name="t-name" maxlength="25"> <br>
+                    <input type="text" id="t-name" name="t-name" maxlength="25" required> <br>
 
                     <label for="t-description">Description: </label>
-                    <input type="text" id="t-description" class="description" name="t-description" maxlength="250">
+                    <input type="text" id="t-description" class="form-description" name="t-description" maxlength="250">
 
                     <label for="t-due-date">Due Date: </label>
                     <input type="date" id="t-due-date" name="t-due-date"> <br>
                     
                     <p>Priority level: </p>
                     <div>
-                        <input type="radio" id="lowPriority" name="priority" value="low" checked>
+                        <input type="radio" id="lowPriority" name="t-priority" value="low" checked>
                         <label for="lowPriority">Low</label>
                     
-                        <input type="radio" id="mediumPriority" name="priority" value="medium">
+                        <input type="radio" id="mediumPriority" name="t-priority" value="medium">
                         <label for="mediumPriority">Medium</label>
                     
-                        <input type="radio" id="highPriority" name="priority" value="high">
+                        <input type="radio" id="highPriority" name="t-priority" value="high">
                         <label for="highPriority">High</label>
                     </div>
 
