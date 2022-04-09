@@ -19,11 +19,10 @@ const todoDom = (todo) => {
         let setColor = (level) => {
             let priorityColor;
             if(level == "high") priorityColor = "red";
-            else if (level == "medium") priorityColor = "yellow";
+            else if (level == "medium") priorityColor = "gold";
             else priorityColor = "green";
             return priorityColor;
         }
-
         let color = setColor(todo.getPriority());
         return {color};
     }
@@ -45,6 +44,17 @@ const todoDom = (todo) => {
 
         checkmarkDiv.classList.add("checkmark-div");
         checkmarkBtn.classList.add("checkmark-btn");
+
+        editBtn.classList.add("edit-btn");
+        editBtn.classList.add("fa-solid");
+        editBtn.classList.add("fa-pen-to-square");
+
+        deleteBtn.classList.add("delete-btn");
+        deleteBtn.classList.add("fa-regular");
+        deleteBtn.classList.add("fa-trash-can");
+    }
+
+    let addEvents = () => {
         checkmarkDiv.onclick = () => {
             checkmarkBtn.classList.toggle("fa-solid");
             checkmarkBtn.classList.toggle("fa-circle-check");
@@ -58,13 +68,7 @@ const todoDom = (todo) => {
             }
         }
 
-        editBtn.classList.add("edit-btn");
-        editBtn.classList.add("fa-solid");
-        editBtn.classList.add("fa-pen-to-square");
-
-        deleteBtn.classList.add("delete-btn");
-        deleteBtn.classList.add("fa-regular");
-        deleteBtn.classList.add("fa-trash-can");
+        deleteBtn.onclick = () => etask.remove();
     }
 
     let append = () => {
@@ -76,6 +80,7 @@ const todoDom = (todo) => {
     let createInDom = () => {
         addText();
         addStyles();
+        addEvents();
         append();
     }
 
@@ -101,7 +106,7 @@ const form = (div, addBtn) => {
     let clearForm = () => {
         let inputs = form.getElementsByTagName("input");
         for(let i = 0; i < inputs.length; i++) {
-            inputs[i].value = "";
+            if(inputs[i].getAttribute("name") !== "t-priority")inputs[i].value = "";
         }
     }
 
