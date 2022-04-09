@@ -4,6 +4,10 @@ const todo = (title, description, dueDate, priority, notes) => {
     let getDueDate = () => {return dueDate};
     let getPriority = () => {return priority};
     let getNotes = () => {return notes};
-    return {getTitle, getDescription, getDueDate, getPriority, getNotes}
+
+    let isCompleted = false;
+    let getIsCompleted = () => {return isCompleted};
+    let setIsCompleted = (c) => {isCompleted = c};
+    return {getTitle, getDescription, getDueDate, getPriority, getNotes, getIsCompleted, setIsCompleted};
 }
 export {todo};

@@ -45,9 +45,6 @@ const todoDom = (todo) => {
         noteLabel.style.fontWeight = "bold";
         enotes.classList.add("notes");
 
-        checkmarkDiv.classList.add("checkmark-div");
-        checkmarkBtn.classList.add("checkmark-btn");
-
         editBtn.classList.add("edit-btn");
         editBtn.classList.add("fa-solid");
         editBtn.classList.add("fa-pen-to-square");
@@ -55,24 +52,47 @@ const todoDom = (todo) => {
         deleteBtn.classList.add("delete-btn");
         deleteBtn.classList.add("fa-regular");
         deleteBtn.classList.add("fa-trash-can");
-    }
 
-    let addEvents = () => {
-        checkmarkDiv.onclick = () => {
-            checkmarkBtn.classList.toggle("fa-solid");
-            checkmarkBtn.classList.toggle("fa-circle-check");
-            if(checkmarkBtn.classList.length == 1) {
+        let checkmark = () => {
+            let toggle = () => {
+                if(todo.getIsCompleted()) {
+                    todo.setIsCompleted(false);
+                    unchecked();
+                }
+                else {
+                    todo.setIsCompleted(true);
+                    checked();
+                }
+            }
+
+            let unchecked = () => {
+                checkmarkBtn.classList.remove("fa-solid");
+                checkmarkBtn.classList.remove("fa-circle-check");
                 checkmarkDiv.style.border = "1px solid black";
                 etask.style.textDecoration = "none";
                 etask.style.backgroundColor = "inherit";
             }
-            else {
+
+            let checked = () => {
+                checkmarkBtn.classList.add("fa-solid");
+                checkmarkBtn.classList.add("fa-circle-check");
                 checkmarkDiv.style.border = "none";
                 etask.style.textDecoration = "line-through";
                 etask.style.backgroundColor = "rgb(237, 232, 221)";
             }
+            return {toggle, unchecked, checked};
         }
+        checkmarkDiv.classList.add("checkmark-div");
+        if(todo.getIsCompleted()) checkmark().checked();
+        else checkmark().unchecked();
 
+        return {checkmark};
+    }
+
+    let addEvents = () => {
+        checkmarkDiv.onclick = () => {
+            addStyles().checkmark().toggle();
+        }
         deleteBtn.onclick = () => etask.remove();
     }
 
