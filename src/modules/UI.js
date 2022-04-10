@@ -1,6 +1,12 @@
 import * as projectModule from "./project.js";
 import * as todoModule from "./todo.js";
 
+import startOfWeek from 'date-fns/startOfWeek';
+import endOfWeek from 'date-fns/endOfWeek';
+import startOfToday from 'date-fns/startOfToday';
+import endOfToday from 'date-fns/endOfToday';
+import parseISO from 'date-fns/parseISO'
+
 const todoDom = (todo) => {
     let todoTasksContainer = document.getElementById("todo");
 
@@ -208,16 +214,17 @@ const newProject = (() => {
 
         if(!f.validate().checkEmpty(name, "Name") || !f.validate().checkTitleForDuplicate(name, projectModule.projects)) return false;
 
-        add(name, description);
+        let project = add(name, description, []);
+        createBtnToProject(project);
         f.clear();
         f.removeStyles();
     })
 
-    let add = (name, description) => {
-        let project = projectModule.project(name, description, []);
+    let add = (name, description, todo) => {
+        let project = projectModule.project(name, description, todo);
         projectModule.projects.push(project);
-        if(projectModule.projects.length > 6) document.getElementById("nav").style.transform = "none";
-        createBtnToProject(project);
+        if(projectModule.projects.length > 9) document.getElementById("nav").style.transform = "none";
+        return project;
     }
 
     let createBtnToProject = (project) => {
@@ -231,6 +238,7 @@ const newProject = (() => {
         let nav = document.getElementById("nav");
         nav.insertBefore(li, nav.lastElementChild);
     }
+    return {add, createBtnToProject}
 })();
 
 const showProject = (project) => {
@@ -247,10 +255,79 @@ const showProject = (project) => {
     let message = document.getElementById("project-msg")
     if(todosArr.length == 0) message.textContent = "No upcoming tasks for this project";
     else {
-        for(let i = 0; i < todosArr.length; i++) todoDom.createInDom(todosArr[i]);
+        for(let i = 0; i < todosArr.length; i++) todoDom(todosArr[i]).createInDom();
         message.textContent = "";
     }
 }
+
+function getAllTodos() {
+    let arr = [];
+    let projects = projectModule.projects;
+    for(let p = 0; p < projects.length; p++) {
+        if(projects[p].getTitle() !== "Today" && !projects[p].getTitle() != "This Week") {
+            let todos = projects[p].getTodos();
+            for(let t = 0; t < todos.length; t++) {
+                arr.push(todos[t]);
+            }
+        }
+    }
+    return arr;
+}
+
+const defaults = (() => {
+    let home = newProject.add("Home", "General tasks", [todoModule.todo("Groceries", "Grocery list of what we need this week", "2022-04-09", "high", ""), todoModule.todo("Workout", "Just do it", "2020-02-22", "low", "Can somebody spot me")]);
+    let today = newProject.add("Today", "Upcoming tasks for today", []);
+    let week = newProject.add("This Week", "Upcoming tasks for this week", []);
+
+    let links = document.getElementsByClassName("to-project-btn");
+    for(let i = 0; i < links.length; i++) {
+        if (links[i].textContent == "Home") {
+            links[i].onclick = () => {showProject(home)};
+        }
+        else if (links[i].textContent == "Today") {
+            links[i].onclick = () => {showProject(today)};
+        }
+        else if (links[i].textContent == "This Week") {
+            links[i].onclick = () => {showProject(week)};
+        }
+    }
+    return {home, today, week};
+})();
+
+let update = () => {
+    let allTodos = getAllTodos();
+    let today = defaults.today;
+    let week = defaults.week;
+
+    let updateWeek = () => {
+        let todayDate = new Date();
+        let weekTodos = week.getTodos();
+        let startofWeekDate = startOfWeek(todayDate);
+        let endOfWeekDate = endOfWeek(todayDate);
+        for(let i = 0; i < allTodos.length; i++) {
+            let todo = allTodos[i];
+            let todoDate = todo.getDueDate();
+            if(parseISO(todoDate) >= startofWeekDate && parseISO(todoDate) <= endOfWeekDate) {
+                weekTodos.push(todo);
+            }
+        }
+    }
+    
+    let updateToday = () => {
+        let todayTodos = today.getTodos();
+        let startOfTodayDate = startOfToday();
+        let endOfTodayDate = endOfToday();
+        for(let i = 0; i < allTodos.length; i++) {
+            let todo = allTodos[i];
+            let todoDate = todo.getDueDate();
+            if(parseISO(todoDate) >= startOfTodayDate && parseISO(todoDate) <= endOfTodayDate) {
+                todayTodos.push(todo);
+            }
+        }
+    }
+    return {updateWeek, updateToday};
+}
+
 
 const mobileNav = (() => {
     let openNavBtn = document.getElementById("open-nav-btn");
@@ -268,4 +345,4 @@ const mobileNav = (() => {
     }
 })();
 
-export {todoDom, newProject};
+export {todoDom, newProject, showProject, update};

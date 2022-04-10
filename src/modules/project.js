@@ -5,7 +5,8 @@ const project = (title, description, todos) => {
     let getDescription = () => {return description};
     let getTodos = () => {return todos};
 
-    return {getTitle, getDescription, getTodos}
+    let setTodos = (t) => {todos = t};
+    return {getTitle, getDescription, getTodos, setTodos};
 }
 
 export {projects, project};
