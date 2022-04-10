@@ -193,6 +193,14 @@ const newTodo = (() => {
         if(!f.validate().checkEmpty(name, "Name")) return false;
 
         let task = todoModule.todo(name, description, dueDate, priority, notes);
+
+        let projects = projectModule.projects;
+        for(let i = 0; i < projects.length; i++) {
+            if(projects[i].getTitle() == document.getElementById("project-title").textContent) {
+                projects[i].getTodos().push(task);
+            } 
+        }
+
         todoDom(task).createInDom();
         f.clear();
         f.removeStyles();
