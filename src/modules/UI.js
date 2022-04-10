@@ -99,7 +99,10 @@ const todoDom = (todo) => {
         checkmarkDiv.onclick = () => {
             addStyles().checkmark().toggle();
         }
-        deleteBtn.onclick = () => etask.remove();
+        deleteBtn.onclick = () => {
+            etask.remove();
+            todo.setIsDeleted(true);
+        }
     }
 
     let append = () => {
@@ -259,11 +262,15 @@ const showProject = (project) => {
     title.textContent = project.getTitle();
     description.textContent = project.getDescription();
 
-    let todosArr = project.getTodos();
+    let todosArr = project.getTodos().filter(todo => !todo.getIsDeleted());
+    if(todosArr.length != project.getTodos().length)project.setTodos(todosArr);
+
     let message = document.getElementById("project-msg")
     if(todosArr.length == 0) message.textContent = "No upcoming tasks for this project";
     else {
-        for(let i = 0; i < todosArr.length; i++) todoDom(todosArr[i]).createInDom();
+        for(let i = 0; i < todosArr.length; i++) {
+            todoDom(todosArr[i]).createInDom();
+        }
         message.textContent = "";
     }
 }
