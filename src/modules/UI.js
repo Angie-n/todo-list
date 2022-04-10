@@ -275,6 +275,10 @@ const showProject = (project) => {
         }
         message.textContent = "";
     }
+
+    let addTodoBtn = document.getElementById("add-todo-btn");
+    if(title.textContent === "This Week" || title.textContent === "Today") addTodoBtn.style.display = "none";
+    else addTodoBtn.style.display = "block";
 }
 
 function getAllTodos() {
@@ -312,12 +316,11 @@ const defaults = (() => {
 })();
 
 let update = () => {
-    let checkAll = (updateWhich) => {
+    let checkAll = () => {
         let allTodos = getAllTodos();
         for(let i = 0; i < allTodos.length; i++) {
             let todo = allTodos[i];
-            if(updateWhich == "Week") updateWeek().checkOne(todo);
-            else updateToday().checkOne(todo);
+            if(updateWeek().checkOne(todo)) updateToday().checkOne(todo);
         }
     }
 
