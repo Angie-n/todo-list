@@ -203,6 +203,8 @@ const newTodo = (() => {
                 projects[i].getTodos().push(task);
             } 
         }
+        update().updateWeek().checkOne(task);
+        update().updateToday().checkOne(task);
 
         todoDom(task).createInDom();
         f.clear();
@@ -279,7 +281,7 @@ function getAllTodos() {
     let arr = [];
     let projects = projectModule.projects;
     for(let p = 0; p < projects.length; p++) {
-        if(projects[p].getTitle() !== "Today" && !projects[p].getTitle() != "This Week") {
+        if(projects[p].getTitle() !== "Today" && projects[p].getTitle() != "This Week") {
             let todos = projects[p].getTodos();
             for(let t = 0; t < todos.length; t++) {
                 arr.push(todos[t]);
@@ -310,39 +312,50 @@ const defaults = (() => {
 })();
 
 let update = () => {
-    let allTodos = getAllTodos();
-    let today = defaults.today;
-    let week = defaults.week;
-
-    let updateWeek = () => {
-        let todayDate = new Date();
-        let weekTodos = week.getTodos();
-        let startofWeekDate = startOfWeek(todayDate);
-        let endOfWeekDate = endOfWeek(todayDate);
+    let checkAll = (updateWhich) => {
+        let allTodos = getAllTodos();
         for(let i = 0; i < allTodos.length; i++) {
             let todo = allTodos[i];
+            if(updateWhich == "Week") updateWeek().checkOne(todo);
+            else updateToday().checkOne(todo);
+        }
+    }
+
+    let updateWeek = () => {
+        let week = defaults.week;
+        let weekTodos = week.getTodos();
+
+        let todayDate = new Date();
+        let startofWeekDate = startOfWeek(todayDate);
+        let endOfWeekDate = endOfWeek(todayDate);
+
+        let checkOne = (todo) => {
             let todoDate = todo.getDueDate();
             if(parseISO(todoDate) >= startofWeekDate && parseISO(todoDate) <= endOfWeekDate) {
                 weekTodos.push(todo);
+                return true;
             }
         }
+        return {checkOne};
     }
-    
+
     let updateToday = () => {
+        let today = defaults.today;
         let todayTodos = today.getTodos();
         let startOfTodayDate = startOfToday();
         let endOfTodayDate = endOfToday();
-        for(let i = 0; i < allTodos.length; i++) {
-            let todo = allTodos[i];
+
+        let checkOne = (todo) => {
             let todoDate = todo.getDueDate();
             if(parseISO(todoDate) >= startOfTodayDate && parseISO(todoDate) <= endOfTodayDate) {
                 todayTodos.push(todo);
+                return true;
             }
         }
+        return {checkOne};
     }
-    return {updateWeek, updateToday};
+    return {checkAll, updateWeek, updateToday}
 }
-
 
 const mobileNav = (() => {
     let openNavBtn = document.getElementById("open-nav-btn");
