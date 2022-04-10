@@ -159,7 +159,7 @@ button[type='submit']:hover {
 #project h2 {
     position: absolute;
     top: calc(0px - var(--folder-border-size) - 20px);
-    left: calc(10px - var(--folder-border-size));
+    left: calc(0px - var(--folder-border-size));
     display: flex;
     justify-content: center;
     align-items: center;
