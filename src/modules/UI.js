@@ -15,7 +15,8 @@ const todoDom = (todo) => {
     let edescription = document.createElement("p");
     let edueDate = document.createElement("p");
     let noteLabel = document.createElement("span");
-    let enotes = document.createElement("p");
+    let noteContent = document.createElement("p");
+    let enotes = document.createElement("div");
 
     let checkmarkDiv = document.createElement("div");
     let checkmarkBtn = document.createElement("i");
@@ -30,8 +31,15 @@ const todoDom = (todo) => {
             else priorityColor = "green";
             return priorityColor;
         }
+
         let color = setColor(todo.getPriority());
-        return {color};
+
+        let update = () => {
+            etask.style.borderLeft = color + " 5px solid";
+        }
+        let getColor = () => {return color};
+
+        return {update, getColor};
     }
 
     let addText = () => {
@@ -39,12 +47,12 @@ const todoDom = (todo) => {
         edescription.textContent = todo.getDescription();
         edueDate.textContent = todo.getDueDate();
         noteLabel.textContent = "Notes: ";
-        enotes.textContent = todo.getNotes();
+        noteContent.textContent = todo.getNotes();
     }
     
     let addStyles = () => {
         etask.classList.add("task");
-        etask.style.borderLeft = priority().color + " 5px solid";
+        priority().update();
         etitle.classList.add("title");
         edescription.classList.add("description");
         edueDate.classList.add("due-date");
@@ -99,49 +107,76 @@ const todoDom = (todo) => {
         checkmarkDiv.onclick = () => {
             addStyles().checkmark().toggle();
         }
+
         deleteBtn.onclick = () => {
             etask.remove();
             todo.setIsDeleted(true);
         }
+
+        let f = form(document.getElementById("change-todo"));
+        f.addEvents().enterForm(editBtn);
+        editBtn.addEventListener("click", e => {
+            changeTodo.passTodos(todo, etask);
+            changeTodo.addFormInfo();
+        });
     }
 
-    let append = () => {
-        enotes.prepend(noteLabel);
+    let appendPieces = () => {
+        enotes.prepend(noteLabel, noteContent);
         checkmarkDiv.append(checkmarkBtn);
         etask.append(checkmarkDiv, etitle, edescription, edueDate, enotes, editBtn, deleteBtn);
-        todoTasksContainer.append(etask);
     }
 
-    let createInDom = () => {
+    let addAll = () => {
         addText();
         addStyles();
         addEvents();
-        append();
+        appendPieces();
     }
 
-    return {createInDom};
+    let createInDom = () => {
+        addAll();
+        todoTasksContainer.append(etask);
+    }
+
+    let replaceInDom = (otherTodo) => {
+        addAll();
+        otherTodo.replaceWith(etask);
+    }
+
+    return {createInDom, replaceInDom, priority};
 } 
 
-const form = (div, addBtn) => {
+const form = (div) => {
     let form = div.getElementsByTagName("form")[0];
     let exitBtn = div.getElementsByClassName("exit-btn")[0];
     let blocker = document.getElementById("blocker");
 
     let addEvents = () => {
-        addBtn.onclick = e => {
-            blocker.style.filter = "blur(5px)";
-            div.style.display = "flex";
-        };
+        let enterForm = (addBtn) => {
+            addBtn.onclick = e => {
+                blocker.style.filter = "blur(5px)";
+                div.style.display = "flex";
+            };
+        }
 
-        exitBtn.onclick = e => {
-            removeStyles();
-        };
+        let exitForm = () => {
+            exitBtn.onclick = e => {
+                removeStyles();
+            };
+        }
+
+        let all = (addBtn) => {
+            enterForm(addBtn);
+            exitForm();
+        }
+        return {enterForm, exitForm, all};
     }
 
     let clear = () => {
         let inputs = form.getElementsByTagName("input");
         for(let i = 0; i < inputs.length; i++) {
-            if(inputs[i].getAttribute("name") !== "t-priority")inputs[i].value = "";
+            if(inputs[i].getAttribute("type") != "radio")inputs[i].value = "";
         }
     }
 
@@ -182,8 +217,8 @@ const newTodo = (() => {
     let todoForm = addTodoDiv.getElementsByTagName("form")[0];
     let addBtn = document.getElementById("add-todo-btn");
 
-    let f = form(addTodoDiv, addBtn);
-    f.addEvents();
+    let f = form(addTodoDiv);
+    f.addEvents().all(addBtn);
 
     todoForm.onsubmit = (e => {
         e.preventDefault();
@@ -212,13 +247,105 @@ const newTodo = (() => {
     })
 })();
 
+const changeTodo = (() => {
+    let changeTodoDiv = document.getElementById("change-todo");
+    let todoForm = changeTodoDiv.getElementsByTagName("form")[0];
+
+    let f = form(changeTodoDiv);
+    f.addEvents().exitForm();
+
+    let originalTodo;
+    let originalTodoDOM;
+
+    let passTodos = (todo, todoDOM) => {
+        originalTodo = todo;
+        originalTodoDOM = todoDOM;
+    }
+
+    let fName = document.getElementById("change-name");
+    let fDescription = document.getElementById("change-description");
+    let fDueDate = document.getElementById("change-due-date");
+    let fNotes = document.getElementById("change-notes");
+
+    let addFormInfo = () => {
+        fName.value = originalTodo.getTitle();
+        fDescription.value = originalTodo.getDescription();
+        fDueDate.value = originalTodo.getDueDate();
+        fNotes.value = originalTodo.getNotes();
+        let fPriority = document.querySelector("input[name='change-priority'][value='" + originalTodo.getPriority() + "']");
+        fPriority.checked = true;
+    }
+
+    todoForm.onsubmit = (e => {
+        e.preventDefault();
+        let name = fName.value.trim();
+        let description = fDescription.value;
+        let dueDate = fDueDate.value;
+        let priority = document.querySelector("input[name='change-priority']:checked").value;
+        let notes = fNotes.value;
+
+        if(!f.validate().checkEmpty(name, "Name")) return false;
+
+        let newTodo = todoModule.todo(name, description, dueDate, priority, notes);
+
+        let projects = projectModule.projects;
+        for(let i = 0; i < projects.length; i++) {
+            if(projects[i].getTitle() == document.getElementById("project-title").textContent) {
+                let index = projects[i].getTodos().indexOf(originalTodo);
+                let newList = projects[i].getTodos();
+                newList[index] = newTodo;
+                projects[i].setTodos(newList);
+            } 
+        }
+
+        let indexInWeek = defaults.week.getTodos().indexOf(originalTodo);
+        let indexInToday = defaults.today.getTodos().indexOf(originalTodo);
+
+        if(indexInWeek !== -1 && parseISO(newTodo.getDueDate()) >= startOfWeek(new Date()) && parseISO(newTodo.getDueDate()) <= endOfWeek(new Date())) {
+            let newList = defaults.week.getTodos();
+            newList.splice(indexInWeek, 1, newTodo);
+            defaults.week.setTodos(newList);
+            console.log("1");
+        }
+        else if(indexInWeek !== -1) {
+            let newList = defaults.week.getTodos();
+            newList.splice(indexInWeek, 1);
+            defaults.week.setTodos(newList);
+            console.log("2");
+        }
+        else {update().updateWeek().checkOne(newTodo);}
+
+        if(indexInToday !== -1 && parseISO(newTodo.getDueDate()) >= startOfToday() &&  parseISO(newTodo.getDueDate()) <= endOfToday()) {
+            let newList = defaults.todat.getTodos();
+            newList.splice(indexInWeek, 1, newTodo);
+            defaults.today.setTodos(newList);
+            console.log("3");
+        }
+        else if(indexInToday !== -1) {
+            let newList = defaults.today.getTodos();
+            newList.splice(indexInWeek, 1);
+            defaults.today.setTodos(newList);
+            console.log("4");
+        }
+        else {update().updateToday().checkOne(newTodo);}
+
+        todoDom(newTodo).replaceInDom(originalTodoDOM);
+        todoDom(newTodo).priority().update();
+
+        f.clear();
+        f.removeStyles();
+    })
+
+    return {passTodos, addFormInfo};
+})();
+
 const newProject = (() => {
     let addProjectDiv = document.getElementById("add-project");
     let formDiv = addProjectDiv.getElementsByTagName("form")[0];
     let addBtn = document.getElementById("add-project-btn");
 
-    let f = form(addProjectDiv, addBtn);
-    f.addEvents();
+    let f = form(addProjectDiv);
+    f.addEvents().all(addBtn);
 
     formDiv.onsubmit = (e => {
         e.preventDefault();
@@ -296,7 +423,7 @@ function getAllTodos() {
 }
 
 const defaults = (() => {
-    let home = newProject.add("Home", "General tasks", [todoModule.todo("Groceries", "Grocery list of what we need this week", "2022-04-09", "high", ""), todoModule.todo("Workout", "Just do it", "2020-02-22", "low", "Can somebody spot me")]);
+    let home = newProject.add("Home", "General tasks", [todoModule.todo("Groceries", "Grocery list of what we need this week", "2022-04-11", "high", ""), todoModule.todo("Workout", "Just do it", "2020-02-22", "low", "Can somebody spot me")]);
     let today = newProject.add("Today", "Upcoming tasks for today", []);
     let week = newProject.add("This Week", "Upcoming tasks for this week", []);
 
@@ -338,6 +465,7 @@ let update = () => {
                 weekTodos.push(todo);
                 return true;
             }
+            return false;
         }
         return {checkOne};
     }
@@ -354,6 +482,7 @@ let update = () => {
                 todayTodos.push(todo);
                 return true;
             }
+            return false;
         }
         return {checkOne};
     }

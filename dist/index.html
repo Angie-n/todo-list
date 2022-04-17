@@ -82,5 +82,40 @@
             </form>
         </div>
     </div>
+    <div id="change-todo" class="add">
+        <div id="change-todo-card" class="add-card">
+            <button class="exit-btn">x</button>
+            <form>
+                <h2>Edit Todo</h2>
+                <section>
+                    <label for="change-name">Task: </label>
+                    <input type="text" id="change-name" name="change-name" maxlength="25" required> <br>
+
+                    <label for="change-description">Description: </label>
+                    <input type="text" id="change-description" class="form-description" name="change-description" maxlength="250">
+
+                    <label for="change-due-date">Due Date: </label>
+                    <input type="date" id="change-due-date" name="change-due-date"> <br>
+                    
+                    <p>Priority level: </p>
+                    <div>
+                        <input type="radio" id="change-low-priority" name="change-priority" value="low" checked>
+                        <label for="change-low-priority">Low</label>
+                    
+                        <input type="radio" id="change-medium-Priority" name="change-priority" value="medium">
+                        <label for="change-medium-Priority">Medium</label>
+                    
+                        <input type="radio" id="change-high-priority" name="change-priority" value="high">
+                        <label for="change-high-priority">High</label>
+                    </div>
+
+                    <label for="change-notes">Notes: </label>
+                    <input type="text" id="change-notes" name="change-notes"> <br>
+                </section>
+                <div id="change-error-msg" class="error-msg"></div>
+                <div><button type="submit">Change Todo</button></div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

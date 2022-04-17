@@ -171,8 +171,20 @@ button[type='submit']:hover {
     box-shadow: inset 1px -5px 3px var(--dark-manila);
 }
 
-#project p {
+#project > p {
     font-size: 1.5em;
+}
+
+#add-project {
+    display: none;
+}
+
+#add-todo {
+    display: none;
+}
+
+#change-todo {
+    display: none;
 }
 
 .add { 
@@ -181,7 +193,6 @@ button[type='submit']:hover {
     bottom: 0;
     width: 100%;
     height: 100%;
-    display: none;
     justify-content: center;
     align-items: center;
 }
@@ -259,6 +270,10 @@ form div {
     align-items: center;
 }
 
+.task > p {
+    font-size: 1.4em;
+}
+
 .task:hover {
     box-shadow: 1px 1px 2px gray;
 }
@@ -280,8 +295,15 @@ form div {
 }
 
 .notes {
+    display: flex;
+    align-items: center;
+    font-size: 1.4em;
     grid-row: 3 / 4;
     grid-column: 1 / 6;
+}
+
+.notes span {
+    margin-right: 5px;
 }
 
 i {
