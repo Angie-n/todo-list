@@ -107,6 +107,7 @@ const todoDom = (todo) => {
         deleteBtn.onclick = () => {
             etask.remove();
             todo.setIsDeleted(true);
+            if(todoTasksContainer.childElementCount == 0) document.getElementById("project-msg").textContent = "No upcoming tasks for this project";
         }
 
         let f = form(document.getElementById("change-todo"));
@@ -241,6 +242,7 @@ const newTodo = (() => {
         todoDom(task).createInDom();
         f.clear();
         f.removeStyles();
+        document.getElementById("project-msg").textContent = "";
     })
 })();
 
@@ -288,21 +290,29 @@ const changeTodo = (() => {
         let indexInWeek = defaults.week.getTodos().indexOf(todo);
         let indexInToday = defaults.today.getTodos().indexOf(todo);
 
+        let shouldRemove;
+
         if(indexInWeek === -1) {update().updateWeek().checkOne(todo);}
-        else if(indexInWeek !== -1 && parseISO(todo.getDueDate()) <= startOfWeek(new Date()) || parseISO(todo.getDueDate()) >= endOfWeek(new Date())) {
+        else if(indexInWeek !== -1 && (parseISO(todo.getDueDate()) < startOfWeek(new Date()) || parseISO(todo.getDueDate()) > endOfWeek(new Date()))) {
             let newList = defaults.week.getTodos();
             newList.splice(indexInWeek, 1);
             defaults.week.setTodos(newList);
+            if(document.getElementById("project-title").textContent === "This Week") shouldRemove = true;
         }
 
         if (indexInToday === -1){update().updateToday().checkOne(todo);}
-        else if(indexInToday !== -1 && parseISO(todo.getDueDate()) <= startOfToday() &&  parseISO(todo.getDueDate()) >= endOfToday()) {
+        else if(indexInToday !== -1 && (parseISO(todo.getDueDate()) < startOfToday() || parseISO(todo.getDueDate()) > endOfToday())) {
             let newList = defaults.today.getTodos();
             newList.splice(indexInWeek, 1);
             defaults.today.setTodos(newList);
+            if(document.getElementById("project-title").textContent === "Today") shouldRemove = true;
         }
 
-        todoDom(todo).updateInDom(todoDOM);
+        if(shouldRemove) {
+            todoDOM.remove();
+            document.getElementById("project-msg").textContent = "No upcoming tasks for this project";
+        }
+        else todoDom(todo).updateInDom(todoDOM);
 
         f.clear();
         f.removeStyles();
@@ -395,7 +405,7 @@ function getAllTodos() {
 }
 
 const defaults = (() => {
-    let home = newProject.add("Home", "General tasks", [todoModule.todo("Groceries", "Grocery list of what we need this week", "2022-04-11", "high", ""), todoModule.todo("Workout", "Just do it", "2020-02-22", "low", "Can somebody spot me")]);
+    let home = newProject.add("Home", "General tasks", [todoModule.todo("Groceries", "Grocery list of what we need this week", "2022-04-17", "high", ""), todoModule.todo("Workout", "Just do it", "2020-02-22", "low", "Can somebody spot me")]);
     let today = newProject.add("Today", "Upcoming tasks for today", []);
     let week = newProject.add("This Week", "Upcoming tasks for this week", []);
 
