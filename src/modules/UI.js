@@ -121,30 +121,31 @@ const todoDom = (todo) => {
         });
     }
 
+    let addAll = () => {
+        addText();
+        addStyles();
+        addEvents();
+    }
+
     let appendPieces = () => {
         enotes.prepend(noteLabel, noteContent);
         checkmarkDiv.append(checkmarkBtn);
         etask.append(checkmarkDiv, etitle, edescription, edueDate, enotes, editBtn, deleteBtn);
     }
 
-    let addAll = () => {
-        addText();
-        addStyles();
-        addEvents();
-        appendPieces();
-    }
-
     let createInDom = () => {
         addAll();
+        appendPieces();
         todoTasksContainer.append(etask);
     }
 
-    let replaceInDom = (otherTodo) => {
+    let updateInDom = (container) => {
         addAll();
-        otherTodo.replaceWith(etask);
+        appendPieces();
+        todoTasksContainer.replaceChild(etask, container);
     }
 
-    return {createInDom, replaceInDom, priority};
+    return {createInDom, priority, updateInDom};
 } 
 
 const form = (div) => {
@@ -254,12 +255,12 @@ const changeTodo = (() => {
     let f = form(changeTodoDiv);
     f.addEvents().exitForm();
 
-    let originalTodo;
-    let originalTodoDOM;
+    let todo;
+    let todoDOM;
 
-    let passTodos = (todo, todoDOM) => {
-        originalTodo = todo;
-        originalTodoDOM = todoDOM;
+    let passTodos = (t, td) => {
+        todo = t;
+        todoDOM = td;
     }
 
     let fName = document.getElementById("change-name");
@@ -268,11 +269,11 @@ const changeTodo = (() => {
     let fNotes = document.getElementById("change-notes");
 
     let addFormInfo = () => {
-        fName.value = originalTodo.getTitle();
-        fDescription.value = originalTodo.getDescription();
-        fDueDate.value = originalTodo.getDueDate();
-        fNotes.value = originalTodo.getNotes();
-        let fPriority = document.querySelector("input[name='change-priority'][value='" + originalTodo.getPriority() + "']");
+        fName.value = todo.getTitle();
+        fDescription.value = todo.getDescription();
+        fDueDate.value = todo.getDueDate();
+        fNotes.value = todo.getNotes();
+        let fPriority = document.querySelector("input[name='change-priority'][value='" + todo.getPriority() + "']");
         fPriority.checked = true;
     }
 
@@ -286,51 +287,27 @@ const changeTodo = (() => {
 
         if(!f.validate().checkEmpty(name, "Name")) return false;
 
-        let newTodo = todoModule.todo(name, description, dueDate, priority, notes);
+        todo.update(name, description, dueDate, priority, notes);
 
-        let projects = projectModule.projects;
-        for(let i = 0; i < projects.length; i++) {
-            if(projects[i].getTitle() == document.getElementById("project-title").textContent) {
-                let index = projects[i].getTodos().indexOf(originalTodo);
-                let newList = projects[i].getTodos();
-                newList[index] = newTodo;
-                projects[i].setTodos(newList);
-            } 
-        }
+        let indexInWeek = defaults.week.getTodos().indexOf(todo);
+        let indexInToday = defaults.today.getTodos().indexOf(todo);
 
-        let indexInWeek = defaults.week.getTodos().indexOf(originalTodo);
-        let indexInToday = defaults.today.getTodos().indexOf(originalTodo);
-
-        if(indexInWeek !== -1 && parseISO(newTodo.getDueDate()) >= startOfWeek(new Date()) && parseISO(newTodo.getDueDate()) <= endOfWeek(new Date())) {
-            let newList = defaults.week.getTodos();
-            newList.splice(indexInWeek, 1, newTodo);
-            defaults.week.setTodos(newList);
-            console.log("1");
-        }
-        else if(indexInWeek !== -1) {
+        if(indexInWeek === -1) {update().updateWeek().checkOne(todo);}
+        else if(indexInWeek !== -1 && parseISO(todo.getDueDate()) <= startOfWeek(new Date()) || parseISO(todo.getDueDate()) >= endOfWeek(new Date())) {
             let newList = defaults.week.getTodos();
             newList.splice(indexInWeek, 1);
             defaults.week.setTodos(newList);
-            console.log("2");
         }
-        else {update().updateWeek().checkOne(newTodo);}
 
-        if(indexInToday !== -1 && parseISO(newTodo.getDueDate()) >= startOfToday() &&  parseISO(newTodo.getDueDate()) <= endOfToday()) {
-            let newList = defaults.todat.getTodos();
-            newList.splice(indexInWeek, 1, newTodo);
-            defaults.today.setTodos(newList);
-            console.log("3");
-        }
-        else if(indexInToday !== -1) {
+        if (indexInToday === -1){update().updateToday().checkOne(todo);}
+        else if(indexInToday !== -1 && parseISO(todo.getDueDate()) <= startOfToday() &&  parseISO(todo.getDueDate()) >= endOfToday()) {
             let newList = defaults.today.getTodos();
             newList.splice(indexInWeek, 1);
             defaults.today.setTodos(newList);
-            console.log("4");
         }
-        else {update().updateToday().checkOne(newTodo);}
 
-        todoDom(newTodo).replaceInDom(originalTodoDOM);
-        todoDom(newTodo).priority().update();
+        todoDom(todo).updateInDom(todoDOM);
+        todoDom(todo).priority().update();
 
         f.clear();
         f.removeStyles();

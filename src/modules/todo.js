@@ -12,6 +12,14 @@ const todo = (title, description, dueDate, priority, notes) => {
     let isDeleted = false;
     let getIsDeleted = () => {return isDeleted};
     let setIsDeleted = (d) => {isDeleted = d};
-    return {getTitle, getDescription, getDueDate, getPriority, getNotes, getIsCompleted, setIsCompleted, getIsDeleted, setIsDeleted};
+
+    let update = (t, d, dd, p, n) => {
+        title = t; 
+        description = d;
+        dueDate = dd;
+        priority = p;
+        notes = n;
+    }
+    return {getTitle, getDescription, getDueDate, getPriority, getNotes, getIsCompleted, setIsCompleted, getIsDeleted, setIsDeleted, update};
 }
 export {todo};
