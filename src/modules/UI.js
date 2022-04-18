@@ -33,13 +33,9 @@ const todoDom = (todo) => {
         }
 
         let color = setColor(todo.getPriority());
-
-        let update = () => {
-            etask.style.borderLeft = color + " 5px solid";
-        }
         let getColor = () => {return color};
 
-        return {update, getColor};
+        return {getColor};
     }
 
     let addText = () => {
@@ -52,7 +48,7 @@ const todoDom = (todo) => {
     
     let addStyles = () => {
         etask.classList.add("task");
-        priority().update();
+        etask.style.borderLeft = priority().getColor() + " 5px solid";
         etitle.classList.add("title");
         edescription.classList.add("description");
         edueDate.classList.add("due-date");
@@ -307,7 +303,6 @@ const changeTodo = (() => {
         }
 
         todoDom(todo).updateInDom(todoDOM);
-        todoDom(todo).priority().update();
 
         f.clear();
         f.removeStyles();
