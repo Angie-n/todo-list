@@ -1,5 +1,6 @@
 import * as projectModule from "./project.js";
 import * as todoModule from "./todo.js";
+import {storage} from "./localStorage";
 
 import startOfWeek from 'date-fns/startOfWeek';
 import endOfWeek from 'date-fns/endOfWeek';
@@ -7,7 +8,17 @@ import startOfToday from 'date-fns/startOfToday';
 import endOfToday from 'date-fns/endOfToday';
 import parseISO from 'date-fns/parseISO'
 
-let allTodos = [];
+const compare = (() => {
+    const objects = (obj1, obj2) => {return JSON.stringify(obj1) == JSON.stringify(obj2);};
+    const objectInArray = (obj, arr) => {
+        let index = -1;
+        arr.forEach((e,i) => {
+            if(objects(obj, e)) index = i;
+        });
+        return index;
+    }
+    return {objects, objectInArray};
+});
 
 const todoDom = (todo) => {
     let todoTasksContainer = document.getElementById("todo");
@@ -34,18 +45,18 @@ const todoDom = (todo) => {
             return priorityColor;
         }
 
-        let color = setColor(todo.getPriority());
+        let color = setColor(todo.priority);
         let getColor = () => {return color};
 
         return {getColor};
     }
 
     let addText = () => {
-        etitle.textContent = todo.getTitle();
-        edescription.textContent = todo.getDescription();
-        edueDate.textContent = todo.getDueDate();
+        etitle.textContent = todo.title;
+        edescription.textContent = todo.description;
+        edueDate.textContent = todo.dueDate;
         noteLabel.textContent = "Notes: ";
-        noteContent.textContent = todo.getNotes();
+        noteContent.textContent = todo.notes;
     }
     
     let addStyles = () => {
@@ -67,12 +78,12 @@ const todoDom = (todo) => {
 
         let checkmark = () => {
             let toggle = () => {
-                if(todo.getIsCompleted()) {
-                    todo.setIsCompleted(false);
+                if(todo.isCompleted) {
+                    todo.isCompleted = false;
                     unchecked();
                 }
                 else {
-                    todo.setIsCompleted(true);
+                    todo.isCompleted = true;
                     checked();
                 }
             }
@@ -95,7 +106,7 @@ const todoDom = (todo) => {
             return {toggle, unchecked, checked};
         }
         checkmarkDiv.classList.add("checkmark-div");
-        if(todo.getIsCompleted()) checkmark().checked();
+        if(todo.isCompleted) checkmark().checked();
         else checkmark().unchecked();
 
         return {checkmark};
@@ -104,14 +115,16 @@ const todoDom = (todo) => {
     let addEvents = () => {
         checkmarkDiv.onclick = () => {
             addStyles().checkmark().toggle();
+            storage().populateStorage();
         }
 
         deleteBtn.onclick = () => {
             etask.remove();
-            let index = allTodos.indexOf(todo);
-            allTodos.splice(index, 1);
-            todo.setIsDeleted(true);
+            let index = todoModule.allTodos.indexOf(todo);
+            todoModule.allTodos.splice(index, 1);
+            todo.isDeleted = true;
             if(todoTasksContainer.childElementCount == 0) document.getElementById("project-msg").textContent = "No upcoming tasks for this project";
+            storage().populateStorage();
         }
 
         let f = form(document.getElementById("change-todo"));
@@ -202,7 +215,7 @@ const form = (div) => {
 
         let checkTitleForDuplicate = (input, arr) => {
             for(let i = 0; i < arr.length; i++) {
-                if(input == arr[i].getTitle()) {
+                if(input == arr[i].title) {
                     errorMsg.textContent = "*Error: Name is already being used.";
                     return false;
                 }
@@ -258,8 +271,8 @@ const newTodo = (() => {
 
         let projects = projectModule.projects;
         for(let i = 0; i < projects.length; i++) {
-            if(projects[i].getTitle() == document.getElementById("project-title").textContent) {
-                projects[i].getTodos().push(task);
+            if(projects[i].title == document.getElementById("project-title").textContent) {
+                projects[i].todos.push(task);
             } 
         }
         if(document.getElementById("project-title").textContent != "This Week") update().updateWeek().checkOne(task);
@@ -269,7 +282,8 @@ const newTodo = (() => {
         f.clear();
         f.removeStyles();
         document.getElementById("project-msg").textContent = "";
-        allTodos.push(task);
+        todoModule.allTodos.push(task);
+        storage().populateStorage();
     })
 })();
 
@@ -294,11 +308,11 @@ const changeTodo = (() => {
     let fNotes = document.getElementById("change-notes");
 
     let addFormInfo = () => {
-        fName.value = todo.getTitle();
-        fDescription.value = todo.getDescription();
-        fDueDate.value = todo.getDueDate();
-        fNotes.value = todo.getNotes();
-        let fPriority = document.querySelector("input[name='change-priority'][value='" + todo.getPriority() + "']");
+        fName.value = todo.title;
+        fDescription.value = todo.description;
+        fDueDate.value = todo.dueDate;
+        fNotes.value = todo.notes;
+        let fPriority = document.querySelector("input[name='change-priority'][value='" + todo.priority + "']");
         fPriority.checked = true;
     }
 
@@ -314,26 +328,30 @@ const changeTodo = (() => {
         if(document.getElementById("project-title").textContent == "This Week" && !f.validate().checkDateThisWeek(dueDate)) return false;
         if(document.getElementById("project-title").textContent == "Today" && !f.validate().checkDateToday(dueDate)) return false;
 
-        todo.update(name, description, dueDate, priority, notes);
+        todo.name = name;
+        todo.description = description;
+        todo.dueDate = dueDate;
+        todo.priority = priority;
+        todo.notes = notes;
 
-        let indexInWeek = defaults.week.getTodos().indexOf(todo);
-        let indexInToday = defaults.today.getTodos().indexOf(todo);
+        let indexInWeek = defaults.week.todos.indexOf(todo);
+        let indexInToday = defaults.today.todos.indexOf(todo);
 
         let shouldRemove;
 
         if(indexInWeek === -1) {update().updateWeek().checkOne(todo);}
-        else if(indexInWeek !== -1 && (parseISO(todo.getDueDate()) < startOfWeek(new Date()) || parseISO(todo.getDueDate()) > endOfWeek(new Date()))) {
-            let newList = defaults.week.getTodos();
+        else if(indexInWeek !== -1 && (parseISO(todo.dueDate) < startOfWeek(new Date()) || parseISO(todo.dueDate) > endOfWeek(new Date()))) {
+            let newList = defaults.week.todos;
             newList.splice(indexInWeek, 1);
-            defaults.week.setTodos(newList);
+            defaults.week.todos = newList;
             if(document.getElementById("project-title").textContent === "This Week") shouldRemove = true;
         }
 
         if (indexInToday === -1){update().updateToday().checkOne(todo);}
-        else if(indexInToday !== -1 && (parseISO(todo.getDueDate()) < startOfToday() || parseISO(todo.getDueDate()) > endOfToday())) {
-            let newList = defaults.today.getTodos();
+        else if(indexInToday !== -1 && (parseISO(todo.dueDate) < startOfToday() || parseISO(todo.dueDate) > endOfToday())) {
+            let newList = defaults.today.todos;
             newList.splice(indexInWeek, 1);
-            defaults.today.setTodos(newList);
+            defaults.today.todos = newList;
             if(document.getElementById("project-title").textContent === "Today") shouldRemove = true;
         }
 
@@ -345,6 +363,7 @@ const changeTodo = (() => {
 
         f.clear();
         f.removeStyles();
+        storage().populateStorage();
     })
 
     return {passTodos, addFormInfo};
@@ -369,6 +388,7 @@ const newProject = (() => {
         createBtnToProject(project);
         f.clear();
         f.removeStyles();
+        storage().populateStorage();
     })
 
     let add = (name, description, todo) => {
@@ -382,7 +402,7 @@ const newProject = (() => {
         let li = document.createElement("li");
         let btn = document.createElement("button");
         btn.classList.add("to-project-btn");
-        btn.textContent = project.getTitle();
+        btn.textContent = project.title;
         btn.onclick = () => showProject(project);
         li.append(btn);
 
@@ -399,11 +419,11 @@ const showProject = (project) => {
     let todoDiv = document.getElementById("todo");
     todoDiv.innerHTML = "";
 
-    title.textContent = project.getTitle();
-    description.textContent = project.getDescription();
+    title.textContent = project.title;
+    description.textContent = project.description;
 
-    let todosArr = project.getTodos().filter(todo => !todo.getIsDeleted());
-    if(todosArr.length != project.getTodos().length)project.setTodos(todosArr);
+    let todosArr = project.todos.filter(todo => !todo.isDeleted);
+    if(todosArr.length != project.todos.length)project.todos = todosArr;
 
     let message = document.getElementById("project-msg")
     if(todosArr.length == 0) message.textContent = "No upcoming tasks for this project";
@@ -416,47 +436,72 @@ const showProject = (project) => {
 }
 
 const defaults = (() => {
-    let home = newProject.add("Home", "General tasks", [todoModule.todo("Groceries", "Grocery list of what we need this week", "2022-04-17", "high", ""), todoModule.todo("Workout", "Just do it", "2020-02-22", "low", "Can somebody spot me")]);
-    let today = newProject.add("Today", "Upcoming tasks for today", []);
-    let week = newProject.add("This Week", "Upcoming tasks for this week", []);
-    allTodos.push(home.getTodos()[0]);
-    allTodos.push(home.getTodos()[1]);
+    let home;
+    let today;
+    let week;
 
-    let links = document.getElementsByClassName("to-project-btn");
-    for(let i = 0; i < links.length; i++) {
-        if (links[i].textContent == "Home") {
-            links[i].onclick = () => {showProject(home)};
+    if(projectModule.projects.length == 0) {
+        home = newProject.add("Home", "General tasks", []);
+        today = newProject.add("Today", "Upcoming tasks for today", []);
+        week = newProject.add("This Week", "Upcoming tasks for this week", []);
+    }
+    else {
+        home = projectModule.projects[0];
+        today = projectModule.projects[1];
+        week = projectModule.projects[2];
+    }
+
+    let allTodos = [];
+    for(let i = 0; i < projectModule.projects.length; i++) {
+        if(i < 3) {
+            let links = document.getElementsByClassName("to-project-btn");
+            for(let i = 0; i < links.length; i++) {
+                if (links[i].textContent == "Home") {
+                    links[i].onclick = () => {showProject(home)};
+                }
+                else if (links[i].textContent == "Today") {
+                    links[i].onclick = () => {showProject(today)};
+                }
+                else if (links[i].textContent == "This Week") {
+                    links[i].onclick = () => {showProject(week)};
+                }
+            }
         }
-        else if (links[i].textContent == "Today") {
-            links[i].onclick = () => {showProject(today)};
-        }
-        else if (links[i].textContent == "This Week") {
-            links[i].onclick = () => {showProject(week)};
+        else newProject.createBtnToProject(projectModule.projects[i]);
+        for(let t = 0; t < projectModule.projects[i].todos.length; t++) {
+            if(compare().objectInArray(projectModule.projects[i].todos[t], allTodos) == -1) {
+                allTodos.push(projectModule.projects[i].todos[t]);
+            }
         }
     }
+    todoModule.changeAllTodos(allTodos);
+
     return {home, today, week};
 })();
 
-let update = () => {
+const update = () => {
     let checkAll = () => {
-        for(let i = 0; i < allTodos.length; i++) {
-            let todo = allTodos[i];
+        for(let i = 0; i < todoModule.allTodos.length; i++) {
+            let todo = todoModule.allTodos[i];
             if(updateWeek().checkOne(todo)) updateToday().checkOne(todo);
         }
+        storage().populateStorage();
     }
 
     let updateWeek = () => {
         let week = defaults.week;
-        let weekTodos = week.getTodos();
+        let weekTodos = week.todos;
 
         let todayDate = new Date();
         let startofWeekDate = startOfWeek(todayDate);
         let endOfWeekDate = endOfWeek(todayDate);
 
         let checkOne = (todo) => {
-            let todoDate = todo.getDueDate();
+            let todoDate = todo.dueDate;
             if(parseISO(todoDate) >= startofWeekDate && parseISO(todoDate) <= endOfWeekDate) {
-                weekTodos.push(todo);
+                let index = compare().objectInArray(todo, weekTodos);
+                if(index != -1) weekTodos[index] = todo;
+                else weekTodos.push(todo);
                 return true;
             }
             return false;
@@ -466,14 +511,16 @@ let update = () => {
 
     let updateToday = () => {
         let today = defaults.today;
-        let todayTodos = today.getTodos();
+        let todayTodos = today.todos;
         let startOfTodayDate = startOfToday();
         let endOfTodayDate = endOfToday();
 
         let checkOne = (todo) => {
-            let todoDate = todo.getDueDate();
+            let todoDate = todo.dueDate;
             if(parseISO(todoDate) >= startOfTodayDate && parseISO(todoDate) <= endOfTodayDate) {
-                todayTodos.push(todo);
+                let index = compare().objectInArray(todo, todayTodos);
+                if(index != -1) todayTodos[index] = todo;
+                else todayTodos.push(todo);
                 return true;
             }
             return false;
@@ -499,4 +546,4 @@ const mobileNav = (() => {
     }
 })();
 
-export {todoDom, newProject, showProject, update};
+export {todoDom, newProject, showProject, update, defaults};

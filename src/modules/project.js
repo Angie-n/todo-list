@@ -1,12 +1,12 @@
 let projects = [];
+const changeProjects = (arr) => {projects = arr};
 
-const project = (title, description, todos) => {
-    let getTitle = () => {return title};
-    let getDescription = () => {return description};
-    let getTodos = () => {return todos};
-
-    let setTodos = (t) => {todos = t};
-    return {getTitle, getDescription, getTodos, setTodos};
+const project = (t, d, td) => {
+    let title = t;
+    let description = d;
+    let todos = td;
+    
+    return {title, description, todos};
 }
 
-export {projects, project};
+export {projects, changeProjects, project};
