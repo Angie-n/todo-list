@@ -463,7 +463,9 @@ const defaults = (() => {
     else {
         home = projectModule.projects[0];
         today = projectModule.projects[1];
+        today.todos = [];
         week = projectModule.projects[2];
+        week.todos = [];
     }
 
     let allTodos = [];
@@ -483,7 +485,6 @@ const defaults = (() => {
             }
         }
         else newProject.createBtnToProject(projectModule.projects[i]);
-        console.log(projectModule.projects[i]);
         for(let t = 0; t < projectModule.projects[i].todos.length; t++) {
             if(compare().objectInArray(projectModule.projects[i].todos[t], allTodos) == -1) {
                 allTodos.push(projectModule.projects[i].todos[t]);
