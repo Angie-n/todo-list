@@ -123,7 +123,7 @@ const todoDom = (todo) => {
             let index = todoModule.allTodos.indexOf(todo);
             todoModule.allTodos.splice(index, 1);
             todo.isDeleted = true;
-            if(todoTasksContainer.childElementCount == 0) document.getElementById("project-msg").textContent = "No upcoming tasks for this project";
+            if(todoTasksContainer.childElementCount == 0) document.getElementById("project-msg").style.display = "flex";
             storage().populateStorage();
         }
 
@@ -281,7 +281,7 @@ const newTodo = (() => {
         todoDom(task).createInDom();
         f.clear();
         f.removeStyles();
-        document.getElementById("project-msg").textContent = "";
+        document.getElementById("project-msg").style.display = "none";
         todoModule.allTodos.push(task);
         storage().populateStorage();
     })
@@ -357,7 +357,7 @@ const changeTodo = (() => {
 
         if(shouldRemove) {
             todoDOM.remove();
-            document.getElementById("project-msg").textContent = "No upcoming tasks for this project";
+            document.getElementById("project-msg").style.display = "flex";
         }
         else todoDom(todo).updateInDom(todoDOM);
 
@@ -441,12 +441,12 @@ const showProject = (project) => {
     if(todosArr.length != project.todos.length)project.todos = todosArr;
 
     let message = document.getElementById("project-msg")
-    if(todosArr.length == 0) message.textContent = "No upcoming tasks for this project";
+    if(todosArr.length == 0) message.style.display = "flex";
     else {
         for(let i = 0; i < todosArr.length; i++) {
             todoDom(todosArr[i]).createInDom();
         }
-        message.textContent = "";
+        message.style.display = "none";
     }
 }
 

@@ -159,6 +159,24 @@ button[type='submit']:hover {
     color: rgb(199, 23, 23);
 }
 
+#project-msg {
+    display: flex;
+    height: 100px;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 20px;
+    padding-left: 0;
+}
+
+#project-msg img {
+    height: inherit;
+}
+
+#project-msg p{
+    width: inherit;
+    font-size: 1.5em;
+}
+
 #project {
     position: relative;
     width: calc(100% - var(--sidebar-width));
@@ -185,7 +203,7 @@ button[type='submit']:hover {
 }
 
 #project > p {
-    font-size: 1.5em;
+    font-size: 2em;
 }
 
 #add-project {
