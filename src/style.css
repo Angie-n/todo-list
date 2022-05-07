@@ -133,6 +133,9 @@ button[type='submit']:hover {
 }
 
 #nav li {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     color: var(--brown);
     font-family: ltim, Georgia, Times, 'Times New Roman', serif;
     margin: 10px;
@@ -144,6 +147,16 @@ button[type='submit']:hover {
 
 #nav button:hover {
     color: var(--light-brown);
+}
+
+.delete-project-btn {
+    position: absolute;
+    right: 10px;
+    font-size: 18px;
+}
+
+.delete-project-btn:hover {
+    color: rgb(199, 23, 23);
 }
 
 #project {
@@ -378,6 +391,10 @@ i {
 
     #nav li {
         border: 1px solid var(--manila);
+    }
+
+    #nav button {
+        text-align: center;
     }
 }
 

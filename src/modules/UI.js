@@ -400,15 +400,30 @@ const newProject = (() => {
 
     let createBtnToProject = (project) => {
         let li = document.createElement("li");
-        let btn = document.createElement("button");
-        btn.classList.add("to-project-btn");
-        btn.textContent = project.title;
-        btn.onclick = () => showProject(project);
-        li.append(btn);
+        let addBtn = document.createElement("button");
+        addBtn.classList.add("to-project-btn");
+        addBtn.textContent = project.title;
+        addBtn.onclick = () => showProject(project);
+
+        let deleteBtn = document.createElement("i");
+        deleteBtn.classList.add("delete-project-btn");
+        deleteBtn.classList.add("fa-solid");
+        deleteBtn.classList.add("fa-file-circle-xmark");
+        deleteBtn.onclick = e => {
+            let index = projectModule.projects.indexOf(project);
+            for(let t = 0; t < projectModule.projects[index].todos.length; t++) projectModule.projects[index].todos[t].isDeleted = true;
+            projectModule.projects.splice(index, 1);
+            li.remove();
+            storage().populateStorage();
+            if(project.title == document.getElementById("project-title").textContent) showProject(projectModule.projects[0]);
+        }
+
+        li.append(addBtn, deleteBtn);
 
         let nav = document.getElementById("nav");
         nav.insertBefore(li, nav.lastElementChild);
     }
+
     return {add, createBtnToProject}
 })();
 
@@ -468,6 +483,7 @@ const defaults = (() => {
             }
         }
         else newProject.createBtnToProject(projectModule.projects[i]);
+        console.log(projectModule.projects[i]);
         for(let t = 0; t < projectModule.projects[i].todos.length; t++) {
             if(compare().objectInArray(projectModule.projects[i].todos[t], allTodos) == -1) {
                 allTodos.push(projectModule.projects[i].todos[t]);
