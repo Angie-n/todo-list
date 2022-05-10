@@ -110,6 +110,7 @@ const todoDom = (todo) => {
         else checkmark().unchecked();
 
         if(todo.isOverdue) edueDate.style.color = "red";
+        else edueDate.style.color = "black";
 
         return {checkmark};
     }
@@ -243,7 +244,17 @@ const form = (div) => {
             errorMsg.textContent = "";
             return true;
         }
-        return {checkEmpty, checkTitleForDuplicate, checkDateThisWeek, checkDateToday};
+
+        let checkDateOverdue = (input) => {
+            if(parseISO(input) >= startOfToday()) {
+                errorMsg.textContent = "*Error: Date needs to be prior to today for this project.";
+                return false;
+            }
+            errorMsg.textContent = "";
+            return true;
+        }
+
+        return {checkEmpty, checkTitleForDuplicate, checkDateThisWeek, checkDateToday, checkDateOverdue};
     }
 
     return {addEvents, clear, removeStyles, validate}
@@ -268,19 +279,21 @@ const newTodo = (() => {
         if(!f.validate().checkEmpty(name, "Name")) return false;
         if(document.getElementById("project-title").textContent == "This Week" && !f.validate().checkDateThisWeek(dueDate)) return false;
         if(document.getElementById("project-title").textContent == "Today" && !f.validate().checkDateToday(dueDate)) return false;
+        if(document.getElementById("project-title").textContent == "Overdue" && !f.validate().checkDateOverdue(dueDate)) return false;
 
-        let task = todoModule.todo(name, description, dueDate, priority, notes);
+        let task = todoModule.todo(name, description, dueDate, priority, notes, document.getElementById("project-title").textContent);
 
         let projects = projectModule.projects;
         for(let i = 0; i < projects.length; i++) {
-            if(projects[i].title == document.getElementById("project-title").textContent) {
+            if(projects[i].title == task.source) {
                 projects[i].todos.push(task);
             } 
         }
 
-        if(document.getElementById("project-title").textContent != "This Week") update().updateWeek().checkOne(task);
-        if(document.getElementById("project-title").textContent != "Today") update().updateToday().checkOne(task);
-        if(document.getElementById("project-title").textContent != "Overdue") update().updateOverdue().checkOne(task);
+        if(task.source != "This Week") update().updateWeek().checkOne(task);
+        if(task.source != "Today") update().updateToday().checkOne(task);
+        if(task.source != "Overdue") update().updateOverdue().checkOne(task);
+        else task.isOverdue = true;
 
         todoDom(task).createInDom();
         f.clear();
@@ -337,6 +350,7 @@ const changeTodo = (() => {
         todo.dueDate = dueDate;
         todo.priority = priority;
         todo.notes = notes;
+        todo.source = document.getElementById("project-title").textContent;
 
         let indexInWeek = defaults.week.todos.indexOf(todo);
         let indexInToday = defaults.today.todos.indexOf(todo);
@@ -481,27 +495,17 @@ const defaults = (() => {
     let defaultProjects = [home, today, week, overdue];
     let dateDependentProjects = [today, week, overdue];
 
-    dateDependentProjects.forEach((p, index) => {
-        dateDependentProjects[index].todos = [];
-    });
-
     let allTodos = [];
     let links = document.getElementsByClassName("to-project-btn");
     defaultProjects.forEach((p,index) => {
         links[index].onclick = () => {showProject(p)};
-        if(!dateDependentProjects.includes(p)) {
-            p.todos.forEach(t => {
-                if(compare().objectInArray(t, allTodos) == -1) allTodos.push(t);
-            })
-        }
+        p.todos = p.todos.filter(t => t.source == p.title);
+        p.todos.forEach(t => allTodos.push(t));
+        defaultProjects[index] = p;
     });
     for(let i = defaultProjects.length; i < projectModule.projects.length; i++) {
         newProject.createBtnToProject(projectModule.projects[i]);
-        for(let t = 0; t < projectModule.projects[i].todos.length; t++) {
-            if(compare().objectInArray(projectModule.projects[i].todos[t], allTodos) == -1) {
-                allTodos.push(projectModule.projects[i].todos[t]);
-            }
-        }
+        for(let t = 0; t < projectModule.projects[i].todos.length; t++) allTodos.push(projectModule.projects[i].todos[t]);
     }
     todoModule.changeAllTodos(allTodos);
 
@@ -512,8 +516,8 @@ const update = () => {
     let checkAll = () => {
         for(let i = 0; i < todoModule.allTodos.length; i++) {
             let todo = todoModule.allTodos[i];
-            if(updateWeek().checkOne(todo)) updateToday().checkOne(todo)
-            updateOverdue().checkOne(todo);
+            if(todo.source != "This Week" && updateWeek().checkOne(todo) && todo.source != "Today") updateToday().checkOne(todo)
+            if(todo.source != "Overdue")updateOverdue().checkOne(todo);
         }
         storage().populateStorage();
     }
@@ -522,7 +526,7 @@ const update = () => {
         let overdue = defaults.overdue;
         let overdueTodos = overdue.todos;
 
-        let todayDate = new Date();
+        let todayDate = startOfToday();
 
         let checkOne = (todo) => {
             let todoDate = todo.dueDate;
@@ -531,6 +535,7 @@ const update = () => {
                 overdueTodos.push(todo);
                 return true;
             }
+            else todo.isOverdue = false;
             return false;
         }
         return {checkOne};
