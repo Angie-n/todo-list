@@ -416,6 +416,8 @@ const newProject = (() => {
             li.remove();
             storage().populateStorage();
             if(project.title == document.getElementById("project-title").textContent) showProject(projectModule.projects[0]);
+            else if(document.getElementById("project-title").textContent == projectModule.projects[1].title)showProject(projectModule.projects[1]);
+            else if(document.getElementById("project-title").textContent == projectModule.projects[2].title)showProject(projectModule.projects[2]);
         }
 
         li.append(addBtn, deleteBtn);
