@@ -109,6 +109,8 @@ const todoDom = (todo) => {
         if(todo.isCompleted) checkmark().checked();
         else checkmark().unchecked();
 
+        if(todo.isOverdue) edueDate.style.color = "red";
+
         return {checkmark};
     }
 
@@ -275,8 +277,10 @@ const newTodo = (() => {
                 projects[i].todos.push(task);
             } 
         }
+
         if(document.getElementById("project-title").textContent != "This Week") update().updateWeek().checkOne(task);
         if(document.getElementById("project-title").textContent != "Today") update().updateToday().checkOne(task);
+        if(document.getElementById("project-title").textContent != "Overdue") update().updateOverdue().checkOne(task);
 
         todoDom(task).createInDom();
         f.clear();
@@ -416,8 +420,11 @@ const newProject = (() => {
             li.remove();
             storage().populateStorage();
             if(project.title == document.getElementById("project-title").textContent) showProject(projectModule.projects[0]);
-            else if(document.getElementById("project-title").textContent == projectModule.projects[1].title)showProject(projectModule.projects[1]);
-            else if(document.getElementById("project-title").textContent == projectModule.projects[2].title)showProject(projectModule.projects[2]);
+            else {
+                defaults.dateDependentProjects.forEach(p => {
+                    if(document.getElementById("project-title").textContent == p.title) showProject(p);
+                });
+            }
         }
 
         li.append(addBtn, deleteBtn);
@@ -456,37 +463,40 @@ const defaults = (() => {
     let home;
     let today;
     let week;
+    let overdue;
 
     if(projectModule.projects.length == 0) {
         home = newProject.add("Home", "General tasks", []);
         today = newProject.add("Today", "Upcoming tasks for today", []);
         week = newProject.add("This Week", "Upcoming tasks for this week", []);
+        overdue = newProject.add("Overdue", "Tasks with an overdue due date", []);
     }
     else {
         home = projectModule.projects[0];
         today = projectModule.projects[1];
-        today.todos = [];
         week = projectModule.projects[2];
-        week.todos = [];
+        overdue = projectModule.projects[3];
     }
 
+    let defaultProjects = [home, today, week, overdue];
+    let dateDependentProjects = [today, week, overdue];
+
+    dateDependentProjects.forEach((p, index) => {
+        dateDependentProjects[index].todos = [];
+    });
+
     let allTodos = [];
-    for(let i = 0; i < projectModule.projects.length; i++) {
-        if(i < 3) {
-            let links = document.getElementsByClassName("to-project-btn");
-            for(let i = 0; i < links.length; i++) {
-                if (links[i].textContent == "Home") {
-                    links[i].onclick = () => {showProject(home)};
-                }
-                else if (links[i].textContent == "Today") {
-                    links[i].onclick = () => {showProject(today)};
-                }
-                else if (links[i].textContent == "This Week") {
-                    links[i].onclick = () => {showProject(week)};
-                }
-            }
+    let links = document.getElementsByClassName("to-project-btn");
+    defaultProjects.forEach((p,index) => {
+        links[index].onclick = () => {showProject(p)};
+        if(!dateDependentProjects.includes(p)) {
+            p.todos.forEach(t => {
+                if(compare().objectInArray(t, allTodos) == -1) allTodos.push(t);
+            })
         }
-        else newProject.createBtnToProject(projectModule.projects[i]);
+    });
+    for(let i = defaultProjects.length; i < projectModule.projects.length; i++) {
+        newProject.createBtnToProject(projectModule.projects[i]);
         for(let t = 0; t < projectModule.projects[i].todos.length; t++) {
             if(compare().objectInArray(projectModule.projects[i].todos[t], allTodos) == -1) {
                 allTodos.push(projectModule.projects[i].todos[t]);
@@ -495,16 +505,35 @@ const defaults = (() => {
     }
     todoModule.changeAllTodos(allTodos);
 
-    return {home, today, week};
+    return {home, today, week, overdue, defaultProjects, dateDependentProjects};
 })();
 
 const update = () => {
     let checkAll = () => {
         for(let i = 0; i < todoModule.allTodos.length; i++) {
             let todo = todoModule.allTodos[i];
-            if(updateWeek().checkOne(todo)) updateToday().checkOne(todo);
+            if(updateWeek().checkOne(todo)) updateToday().checkOne(todo)
+            updateOverdue().checkOne(todo);
         }
         storage().populateStorage();
+    }
+
+    let updateOverdue = () => {
+        let overdue = defaults.overdue;
+        let overdueTodos = overdue.todos;
+
+        let todayDate = new Date();
+
+        let checkOne = (todo) => {
+            let todoDate = todo.dueDate;
+            if(parseISO(todoDate) < todayDate) {
+                todo.isOverdue = true;
+                overdueTodos.push(todo);
+                return true;
+            }
+            return false;
+        }
+        return {checkOne};
     }
 
     let updateWeek = () => {
@@ -518,9 +547,7 @@ const update = () => {
         let checkOne = (todo) => {
             let todoDate = todo.dueDate;
             if(parseISO(todoDate) >= startofWeekDate && parseISO(todoDate) <= endOfWeekDate) {
-                let index = compare().objectInArray(todo, weekTodos);
-                if(index != -1) weekTodos[index] = todo;
-                else weekTodos.push(todo);
+                weekTodos.push(todo);
                 return true;
             }
             return false;
@@ -537,16 +564,14 @@ const update = () => {
         let checkOne = (todo) => {
             let todoDate = todo.dueDate;
             if(parseISO(todoDate) >= startOfTodayDate && parseISO(todoDate) <= endOfTodayDate) {
-                let index = compare().objectInArray(todo, todayTodos);
-                if(index != -1) todayTodos[index] = todo;
-                else todayTodos.push(todo);
+                todayTodos.push(todo);
                 return true;
             }
             return false;
         }
         return {checkOne};
     }
-    return {checkAll, updateWeek, updateToday}
+    return {checkAll, updateOverdue, updateWeek, updateToday}
 }
 
 const mobileNav = (() => {

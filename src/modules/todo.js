@@ -10,7 +10,8 @@ const todo = (t, d, dd, p, n) => {
 
     let isCompleted = false;
     let isDeleted = false;
+    let isOverdue;
 
-    return {title, description, dueDate, priority, notes, isCompleted, isDeleted};
+    return {title, description, dueDate, priority, notes, isCompleted, isDeleted, isOverdue};
 }
 export {allTodos, changeAllTodos, todo};
