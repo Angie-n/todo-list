@@ -8,6 +8,7 @@ import startOfToday from 'date-fns/startOfToday';
 import endOfToday from 'date-fns/endOfToday';
 import parseISO from 'date-fns/parseISO'
 
+/* 
 const compare = (() => {
     const objects = (obj1, obj2) => {return JSON.stringify(obj1) == JSON.stringify(obj2);};
     const objectInArray = (obj, arr) => {
@@ -19,6 +20,7 @@ const compare = (() => {
     }
     return {objects, objectInArray};
 });
+*/
 
 const todoDom = (todo) => {
     let todoTasksContainer = document.getElementById("todo");
@@ -338,6 +340,13 @@ const changeTodo = (() => {
         fPriority.checked = true;
     }
 
+    let changeSource = (projectTitle) => {
+        if(todo.source == projectTitle) {
+            todo.source = "Home";
+            defaults.home.todos.push(todo);
+        }
+    }
+
     todoForm.onsubmit = (e => {
         e.preventDefault();
         let name = fName.value.trim();
@@ -347,8 +356,10 @@ const changeTodo = (() => {
         let notes = fNotes.value;
 
         if(!f.validate().checkEmpty(name, "Name")) return false;
-        if(document.getElementById("project-title").textContent == "This Week" && !f.validate().checkDateThisWeek(dueDate)) return false;
-        if(document.getElementById("project-title").textContent == "Today" && !f.validate().checkDateToday(dueDate)) return false;
+        if(document.getElementById("project-title").textContent == "This Week" && !f.validate().checkDateThisWeek(dueDate)) changeSource("This Week");
+        if(document.getElementById("project-title").textContent == "Today" && !f.validate().checkDateToday(dueDate)) changeSource("Today");
+        if(document.getElementById("project-title").textContent == "Overdue" && !f.validate().checkDateOverdue(dueDate)) changeSource("Overdue");
+        document.getElementById("change-error-msg").textContent = "";
 
         todo.name = name;
         todo.description = description;
@@ -465,6 +476,9 @@ const newProject = (() => {
 })();
 
 const showProject = (project) => {
+    if(defaults.dateDependentProjects.includes(project)) document.getElementById("change-todo-notice").style.display = "block";
+    else document.getElementById("change-todo-notice").style.display = "none";
+
     let title = document.getElementById("project-title");
     let description = document.getElementById("project-description");
 
