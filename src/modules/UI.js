@@ -30,6 +30,7 @@ const todoDom = (todo) => {
     let noteLabel = document.createElement("span");
     let noteContent = document.createElement("p");
     let enotes = document.createElement("div");
+    let esource = document.createElement("p");
 
     let checkmarkDiv = document.createElement("div");
     let checkmarkBtn = document.createElement("i");
@@ -57,6 +58,8 @@ const todoDom = (todo) => {
         edueDate.textContent = todo.dueDate;
         noteLabel.textContent = "Notes: ";
         noteContent.textContent = todo.notes;
+        defaults.dateDependentProjects.forEach(p => {if(p.title == todo.source) esource.textContent = " "});
+        if(esource.textContent != " " && document.getElementById("project-title").textContent != todo.source)esource.textContent = todo.source;
     }
     
     let addStyles = () => {
@@ -75,6 +78,8 @@ const todoDom = (todo) => {
         deleteBtn.classList.add("delete-btn");
         deleteBtn.classList.add("fa-regular");
         deleteBtn.classList.add("fa-trash-can");
+
+        esource.classList.add("source");
 
         let checkmark = () => {
             let toggle = () => {
@@ -147,7 +152,7 @@ const todoDom = (todo) => {
     let appendPieces = () => {
         enotes.prepend(noteLabel, noteContent);
         checkmarkDiv.append(checkmarkBtn);
-        etask.append(checkmarkDiv, etitle, edescription, edueDate, enotes, editBtn, deleteBtn);
+        etask.append(checkmarkDiv, etitle, edescription, edueDate, enotes, editBtn, deleteBtn, esource);
     }
 
     let createInDom = () => {
