@@ -359,6 +359,7 @@ const changeTodo = (() => {
 
         let indexInWeek = defaults.week.todos.indexOf(todo);
         let indexInToday = defaults.today.todos.indexOf(todo);
+        let indexInOverdue = defaults.overdue.todos.indexOf(todo);
 
         let shouldRemove;
 
@@ -373,9 +374,18 @@ const changeTodo = (() => {
         if (indexInToday === -1){update().updateToday().checkOne(todo);}
         else if(indexInToday !== -1 && (parseISO(todo.dueDate) < startOfToday() || parseISO(todo.dueDate) > endOfToday())) {
             let newList = defaults.today.todos;
-            newList.splice(indexInWeek, 1);
+            newList.splice(indexInToday, 1);
             defaults.today.todos = newList;
             if(document.getElementById("project-title").textContent === "Today") shouldRemove = true;
+        }
+
+        if (indexInOverdue === -1){update().updateOverdue().checkOne(todo);}
+        else if(indexInOverdue !== -1 && (parseISO(todo.dueDate) >= startOfToday())) {
+            todo.isOverdue = false;
+            let newList = defaults.overdue.todos;
+            newList.splice(indexInWeek, 1);
+            defaults.overdue.todos = newList;
+            if(document.getElementById("project-title").textContent === "Overdue") shouldRemove = true;
         }
 
         if(shouldRemove) {
