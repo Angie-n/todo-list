@@ -355,7 +355,6 @@ const changeTodo = (() => {
         todo.dueDate = dueDate;
         todo.priority = priority;
         todo.notes = notes;
-        todo.source = document.getElementById("project-title").textContent;
 
         let indexInWeek = defaults.week.todos.indexOf(todo);
         let indexInToday = defaults.today.todos.indexOf(todo);
@@ -390,7 +389,7 @@ const changeTodo = (() => {
 
         if(shouldRemove) {
             todoDOM.remove();
-            document.getElementById("project-msg").style.display = "flex";
+            if(document.getElementById("todo").childElementCount == 0)document.getElementById("project-msg").style.display = "flex";
         }
         else todoDom(todo).updateInDom(todoDOM);
 
