@@ -1,3 +1,4 @@
+import "./style.css";
 import * as todoModule from "./modules/todo.js";
 import * as UIModule from "./modules/UI.js";
 import * as projectModule from "./modules/project.js";
